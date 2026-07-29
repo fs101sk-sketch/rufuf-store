@@ -348,6 +348,7 @@ function normalizeSaudiPhone(value){
   if(/^009665\d{8}$/.test(digits)) return '0'+digits.slice(5);
   return '';
 }
+const roundMoney=n=>Math.round((Number(n)+1e-9)*100)/100;
 const money=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const sar=n=>`<span class="num">${money(n)}</span> ر.س`;
 const int=n=>Number(n||0).toLocaleString('en-US');
@@ -970,9 +971,9 @@ function addToCart(id,qty=1,opt=''){
 function cartTotals(){
   const sub=CART.reduce((s,i)=>s+i.price*i.qty,0);
   const ship=CART.length?(sub>=DB.settings.freeShipOver?0:25):0;
-  let disc=0; if(REF) disc=Math.round(sub*0.05*100)/100;
-  const vat=+((sub-disc+ship)*DB.settings.vat/100).toFixed(2);
-  return {sub,ship,disc,vat,total:+(sub-disc+ship+vat).toFixed(2)};
+  let disc=0; if(REF) disc=roundMoney(sub*0.05);
+  const vat=roundMoney((sub-disc+ship)*DB.settings.vat/100);
+  return {sub,ship,disc,vat,total:roundMoney(sub-disc+ship+vat)};
 }
 function checkoutTotals(shipId){
   const base=cartTotals();
@@ -982,13 +983,13 @@ function checkoutTotals(shipId){
   if(sh&&sh.freeOver&&base.sub>=Number(sh.freeOver)) ship=0;
   let disc=base.disc;
   if(COUPON){
-    if(COUPON.type==='percent') disc+=+(base.sub*Number(COUPON.value||0)/100).toFixed(2);
+    if(COUPON.type==='percent') disc+=roundMoney(base.sub*Number(COUPON.value||0)/100);
     else if(COUPON.type==='fixed') disc+=Number(COUPON.value||0);
     else if(COUPON.type==='shipping') ship=0;
   }
   disc=Math.min(base.sub,Math.max(0,disc));
-  const vat=+((base.sub-disc+ship)*DB.settings.vat/100).toFixed(2);
-  return {sub:base.sub,ship,disc,vat,total:+(base.sub-disc+ship+vat).toFixed(2),sh};
+  const vat=roundMoney((base.sub-disc+ship)*DB.settings.vat/100);
+  return {sub:base.sub,ship,disc,vat,total:roundMoney(base.sub-disc+ship+vat),sh};
 }
 function cartPage(){
   const t=cartTotals();
