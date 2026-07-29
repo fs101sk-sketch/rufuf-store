@@ -445,13 +445,13 @@ function seed(){
   ];
   const affiliates=[
     {id:'a1',name:'مشاعل التميمي',handle:'@mashael.style',phone:'0551110002',email:'mashael@mail.com',code:'MASHAEL15',
-     commissionType:'percent',commissionValue:12,status:'active',clicks:0,paid:1850,iban:'SA03 8000 0000 6080 1016 7519',createdAt:dAgo(120),password:'aff123'},
+     commissionType:'percent',commissionValue:12,status:'active',clicks:0,paid:1850,iban:'',createdAt:dAgo(120),password:''},
     {id:'a2',name:'خالد الرشيد',handle:'@khaled.reviews',phone:'0552220003',email:'khaled@mail.com',code:'KHALED10',
-     commissionType:'percent',commissionValue:10,status:'active',clicks:0,paid:900,iban:'SA44 2000 0001 2345 6789 1234',createdAt:dAgo(85),password:'aff123'},
+     commissionType:'percent',commissionValue:10,status:'active',clicks:0,paid:900,iban:'',createdAt:dAgo(85),password:''},
     {id:'a3',name:'ليان عبدالله',handle:'@layan.picks',phone:'0553330004',email:'layan@mail.com',code:'LAYAN20',
-     commissionType:'fixed',commissionValue:35,status:'active',clicks:0,paid:0,iban:'SA11 1000 0009 8765 4321 0001',createdAt:dAgo(38),password:'aff123'},
+     commissionType:'fixed',commissionValue:35,status:'active',clicks:0,paid:0,iban:'',createdAt:dAgo(38),password:''},
     {id:'a4',name:'تركي المطيري',handle:'@turki.deals',phone:'0554440005',email:'turki@mail.com',code:'TURKI5',
-     commissionType:'percent',commissionValue:8,status:'paused',clicks:0,paid:0,iban:'',createdAt:dAgo(15),password:'aff123'},
+     commissionType:'percent',commissionValue:8,status:'paused',clicks:0,paid:0,iban:'',createdAt:dAgo(15),password:''},
   ];
   const coupons=[
     {id:'k1',code:'WELCOME10',type:'percent',value:10,minOrder:150,limit:500,used:87,expires:dAgo(-60),active:true,note:'خصم أول طلب'},
@@ -611,20 +611,17 @@ function renderLogin(){
       <h2 style="font-size:24px">تسجيل الدخول</h2>
       <p class="muted sm" style="margin:4px 0 18px">ادخل باسم المستخدم وكلمة المرور للوصول للوحة التحكم.</p>
       <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">${cloud?'البريد الإلكتروني':'اسم المستخدم'}</span>
-        <input type="text" id="lu" value="${cloud?esc(SB.email):'admin'}" autocomplete="username" placeholder="${cloud?'name@mail.com':''}"></label>
+        <input type="text" id="lu" value="${cloud?esc(SB.email):''}" autocomplete="username" placeholder="${cloud?'name@mail.com':''}"></label>
       <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كلمة المرور</span>
-        <input type="password" id="lp" value="${cloud?'':'admin123'}" autocomplete="current-password"></label>
+        <input type="password" id="lp" value="" autocomplete="current-password"></label>
       <div id="lerr" class="hide" style="color:var(--danger);font-size:13px;margin-bottom:10px"></div>
       <button class="btn block lg" onclick="doLogin()">دخول للوحة التحكم</button>
       ${cloud?`<div class="cred" style="background:var(--petrol-soft);border-color:#A9CBD8">
         <div style="font-weight:700;margin-bottom:5px">الدخول عبر Supabase</div>
         <div style="font-size:12.5px;line-height:1.8">استخدم حساب المالك المفعّل للوصول إلى الطلبات واعتماد الدفع.
         المتجر متصل بـ <span class="mono" dir="ltr">${esc(SB.url.replace(/^https?:\/\//,''))}</span></div></div>`:`<div class="cred">
-        <div style="font-weight:700;margin-bottom:7px">بيانات الدخول التجريبية</div>
-        <div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0">المالك (كل الصلاحيات) <span><b>admin</b> / <b>admin123</b></span></div>
-        <div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0">خدمة العملاء <span><b>support</b> / <b>support123</b></span></div>
-        <div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0">إدارة المخزون <span><b>stock</b> / <b>stock123</b></span></div>
-        <div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-top:1px dashed #E0C079;margin-top:6px;padding-top:7px">بوابة المسوّقين <span><b>MASHAEL15</b> / <b>aff123</b></span></div>
+        <div style="font-weight:700;margin-bottom:7px">تسجيل الدخول الآمن مطلوب</div>
+        <div style="font-size:12.5px;line-height:1.8">لا توجد بيانات دخول افتراضية داخل الصفحة. فعّل اتصال Supabase لاستخدام لوحة التحكم.</div>
       </div>`}
       <div class="center" style="margin-top:16px;display:flex;gap:14px;justify-content:center">
         <a class="sm" style="cursor:pointer;color:var(--petrol);font-weight:600" onclick="go('/')">عرض المتجر</a>
@@ -680,8 +677,8 @@ function renderAffPortal(sub){
       <div style="font-size:11.5px;color:#7E96A3;letter-spacing:.1em">تابع رابطك وعمولاتك</div></div></div>
       <div class="lcard"><h2 style="font-size:23px">دخول المسوّق</h2>
       <p class="muted sm" style="margin:4px 0 18px">استخدم كود التسويق الخاص بك وكلمة المرور.</p>
-      <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كود التسويق</span><input type="text" id="au" value="MASHAEL15"></label>
-      <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كلمة المرور</span><input type="password" id="ap" value="aff123"></label>
+      <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كود التسويق</span><input type="text" id="au" value=""></label>
+      <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كلمة المرور</span><input type="password" id="ap" value=""></label>
       <div id="aerr" class="hide" style="color:var(--danger);font-size:13px;margin-bottom:10px"></div>
       <button class="btn block lg" onclick="doAffLogin()">دخول</button>
       <div class="center" style="margin-top:14px"><a class="sm" style="cursor:pointer;color:var(--petrol);font-weight:600" onclick="go('/')">رجوع للمتجر</a></div>
@@ -845,7 +842,7 @@ function shopFoot(){
     <div><h5>المتجر</h5>${DB.categories.filter(c=>c.active).map(c=>`<a onclick="go('/shop?cat=${c.id}')">${esc(c.name)}</a>`).join('')}</div>
     <div><h5>معلومات</h5>${DB.pages.map(g=>`<a onclick="go('/page/${g.slug}')">${esc(g.title)}</a>`).join('')}<a onclick="go('/track')">تتبّع الطلب</a></div>
     <div><h5>تواصل</h5><a>${esc(s.phone)}</a><a>${esc(s.email)}</a><a>${esc(s.address)}</a>
-    <a onclick="go('/aff')" style="color:var(--saffron);font-weight:600;margin-top:8px">انضم كمسوّق بعمولة ←</a></div>
+    <a onclick="go('/p/p_majlis')" style="color:var(--saffron);font-weight:600;margin-top:8px">اكتشف لعبة المجلس ←</a></div>
   </div><div style="max-width:1200px;margin:24px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.09);font-size:12.5px">
   جميع الأسعار شاملة ضريبة القيمة المضافة ${s.vat}% · © ${new Date().getFullYear()} ${esc(s.storeName)}</div></div>`;
 }
@@ -880,9 +877,9 @@ function homePage(){
     <div class="in">
       ${REF?`<span class="chip gold" style="margin-bottom:14px">🎁 وصلت عبر ${esc(REF)} — خصمك محفوظ للسلة</span>`:''}
       <h1>على <em>رفوفنا</em> بس اللي يستاهل يوصلك.</h1>
-      <p>${esc(s.tagline)}. شحن مجاني للطلبات فوق ${money(s.freeShipOver)} ر.س، وإرجاع خلال 14 يوم.</p>
+      <p>${esc(s.tagline)}. استلام رقمي آمن وبيانات دخول خاصة بعد تأكيد الدفع.</p>
       <div class="row wrap"><button class="btn gold lg" onclick="go('/shop')">تسوّق الآن</button>
-      <button class="btn lg ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="go('/aff')">اربح كمسوّق معنا</button></div>
+      <button class="btn lg ghost" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="go('/p/p_majlis')">تعرف على اللعبة</button></div>
     </div></div>
   <div class="sw">
     <div class="row wrap" style="gap:11px;margin-bottom:26px">
@@ -890,7 +887,7 @@ function homePage(){
     </div>
     ${b?`<div class="card pad" style="background:var(--ink);color:#fff;border:none;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
       <div><div class="dsp" style="font-size:24px">${esc(b.title)}</div><div class="sm" style="color:#A9C0CB">${esc(b.sub)}</div></div>
-      <button class="btn gold" onclick="go('/shop')">شوف العروض</button></div>`:''}
+      <button class="btn gold" onclick="go('/p/p_majlis')">عرض اللعبة</button></div>`:''}
     <div class="spread" style="margin-bottom:14px"><h2 style="font-size:26px">مختارات رفوف</h2>
       <a class="sm" style="cursor:pointer;color:var(--petrol);font-weight:600" onclick="go('/shop')">عرض الكل ←</a></div>
     <div class="pgrid">${feat.map(pcard).join('')}</div>
@@ -1812,7 +1809,7 @@ function affForm(id){
     </div>
     <label class="field"><label>الآيبان للتحويل</label><input type="text" id="a_i" class="mono" value="${esc(a?a.iban:'')}" placeholder="SA00 0000 0000 0000 0000 0000"></label>
     <div class="grid2">
-      <label class="field"><label>كلمة مرور بوابة المسوّق</label><input type="text" id="a_pw" value="${esc(a?a.password:'aff123')}"></label>
+      <label class="field"><label>كلمة مرور بوابة المسوّق</label><input type="password" id="a_pw" value="${esc(a?a.password:'')}"></label>
       <label class="field"><label>الحالة</label><select id="a_s"><option value="active" ${!a||a.status==='active'?'selected':''}>نشط</option>
         <option value="paused" ${a&&a.status==='paused'?'selected':''}>موقوف</option></select></label>
     </div>
@@ -1828,7 +1825,7 @@ function saveAff(id){
   const code=v('a_c').toUpperCase().replace(/[^A-Z0-9_-]/g,'');
   if(DB.affiliates.some(a=>a.code===code&&a.id!==id)){ toast('الكود مستخدم — اختر كودًا ثانيًا','err'); return }
   const d={name:v('a_n'),handle:v('a_h'),phone:v('a_p'),email:v('a_e'),code,commissionType:v('a_t'),
-    commissionValue:+v('a_v')||0,iban:v('a_i'),password:v('a_pw')||'aff123',status:v('a_s')};
+    commissionValue:+v('a_v')||0,iban:v('a_i'),password:v('a_pw'),status:v('a_s')};
   if(id) Object.assign(DB.affiliates.find(x=>x.id===id),d);
   else DB.affiliates.push({id:uid('a'),clicks:0,paid:0,createdAt:nowISO(),...d});
   log('حفظ بيانات المسوّق '+d.name); save(); closeModal(); vAffiliates(); toast('حفظنا بيانات المسوّق','ok');
@@ -2063,20 +2060,20 @@ function vStaff(){
     ${s.role!=='owner'?`<button class="btn dang sm" onclick="if(confirm('حذف المستخدم؟')){DB.staff=DB.staff.filter(x=>x.id!=='${s.id}');save();vStaff()}">${svg('trash')}</button>`:''}</div></td></tr>`).join('')}
   </tbody></table></div>
   <div class="card pad" style="margin-top:14px;background:var(--saffron-soft);border-color:#E8D6AB">
-    <b>${svg('shield')} تنبيه أمني</b><div class="sm" style="margin-top:5px">كلمات المرور هنا للتجربة فقط وتُخزّن محليًا في المتصفح. قبل التشغيل الفعلي اربط المتجر بخادم وقاعدة بيانات مع تشفير كلمات المرور.</div></div>`;
+    <b>${svg('shield')} حماية الحسابات</b><div class="sm" style="margin-top:5px">لا تُخزّن كلمات مرور افتراضية داخل الصفحة. حساب المالك تتم مصادقته عبر Supabase.</div></div>`;
 }
 function stForm(id){
   const s=id?DB.staff.find(x=>x.id===id):null;
   modal(`<div class="mh"><h3>${s?'تعديل مستخدم':'مستخدم جديد'}</h3><button class="x" onclick="closeModal()">${svg('x')}</button></div>
   <div class="mb"><label class="field"><label>الاسم</label><input type="text" id="t_n" value="${esc(s?s.name:'')}"></label>
   <div class="grid2"><label class="field"><label>اسم المستخدم</label><input type="text" id="t_u" class="mono" value="${esc(s?s.username:'')}"></label>
-  <label class="field"><label>كلمة المرور</label><input type="text" id="t_p" class="mono" value="${esc(s?s.password:'')}"></label></div>
+  <label class="field"><label>كلمة المرور</label><input type="password" id="t_p" class="mono" value="${esc(s?s.password:'')}"></label></div>
   <label class="field"><label>الدور</label><select id="t_r">${Object.keys(ROLES).map(k=>`<option value="${k}" ${s&&s.role===k?'selected':''}>${ROLES[k]}</option>`).join('')}</select></label></div>
   <div class="mf"><button class="btn" onclick="saveSt('${id||''}')">حفظ</button><button class="btn ghost" onclick="closeModal()">إلغاء</button></div>`,'narrow');
 }
 function saveSt(id){
   const u=$('#t_u').value.trim(); if(!u||!$('#t_n').value.trim()){toast('اكتب الاسم واسم المستخدم','err');return}
-  const d={name:$('#t_n').value.trim(),username:u,password:$('#t_p').value||'123456',role:$('#t_r').value};
+  const d={name:$('#t_n').value.trim(),username:u,password:$('#t_p').value,role:$('#t_r').value};
   if(id) Object.assign(DB.staff.find(x=>x.id===id),d); else DB.staff.push({id:uid('t'),active:true,createdAt:nowISO(),...d});
   log('حفظ مستخدم '+d.name); save(); closeModal(); vStaff(); toast('حفظنا المستخدم','ok');
 }
