@@ -92,6 +92,13 @@ img{max-width:100%;display:block}
 .field{display:block;margin-bottom:14px}
 .field>label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink-2)}
 .field .hint{font-size:12px;color:var(--muted);margin-top:5px}
+.required{color:var(--danger);margin-inline-start:2px}
+.field-error{display:none;color:var(--danger);font-size:12px;font-weight:600;margin-top:5px}
+.field.has-error .field-error,.checkout-group.has-error .field-error{display:block}
+.field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,69,61,.1)}
+.checkout-group.has-error>.card{border-color:var(--danger)}
+.checkout-alert{display:none;background:var(--danger-soft);border:1px solid #efccc8;color:var(--danger);border-radius:var(--r-sm);padding:9px 11px;margin-bottom:14px;font-size:13px;font-weight:600}
+.checkout-alert.on{display:block}
 input[type=text],input[type=number],input[type=password],input[type=email],input[type=tel],input[type=date],input[type=url],select,textarea{
   width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:#fff;transition:.15s}
 input:focus,select:focus,textarea:focus{border-color:var(--petrol);box-shadow:0 0 0 3px rgba(16,85,110,.1);outline:none}
@@ -157,6 +164,9 @@ tbody tr:hover{background:#FBFBF8}
 .kpi::after{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:var(--petrol)}
 .kpi.g::after{background:var(--saffron)} .kpi.k::after{background:var(--ok)} .kpi.r::after{background:var(--danger)}
 .cols{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
+.cart-layout{grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr)}
+.checkout-layout{grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr)}
+.checkout-summary{position:sticky;top:80px}
 .sect-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-2)}
 .sect-h h3{font-size:18px}
 
@@ -276,7 +286,7 @@ tbody tr:hover{background:#FBFBF8}
 .bars .trk{grid-column:1/-1;height:7px;background:var(--line-2);border-radius:99px;overflow:hidden}
 .bars .fil{height:100%;border-radius:99px;background:var(--petrol)}
 
-@media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.pgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.cols,.cart-layout,.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static}.pgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:820px){
   .side{transform:translateX(100%)}.side.on{transform:none}
   .main{margin-right:0}.burger{display:grid}.scrim{}
@@ -329,6 +339,15 @@ function save(){ clearTimeout(saveT); saveT=setTimeout(()=>{ Store.set(KEY,DB); 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const uid=p=>p+'_'+Math.random().toString(36).slice(2,9);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const latinDigits=v=>String(v??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+function normalizeSaudiPhone(value){
+  const digits=latinDigits(value).replace(/\D/g,'');
+  if(/^05\d{8}$/.test(digits)) return digits;
+  if(/^5\d{8}$/.test(digits)) return '0'+digits;
+  if(/^9665\d{8}$/.test(digits)) return '0'+digits.slice(3);
+  if(/^009665\d{8}$/.test(digits)) return '0'+digits.slice(5);
+  return '';
+}
 const money=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const sar=n=>`<span class="num">${money(n)}</span> ر.س`;
 const int=n=>Number(n||0).toLocaleString('en-US');
@@ -955,13 +974,29 @@ function cartTotals(){
   const vat=+((sub-disc+ship)*DB.settings.vat/100).toFixed(2);
   return {sub,ship,disc,vat,total:+(sub-disc+ship+vat).toFixed(2)};
 }
+function checkoutTotals(shipId){
+  const base=cartTotals();
+  const methods=DB.shipping.filter(s=>s.active);
+  const sh=methods.find(s=>s.id===shipId)||methods[0]||null;
+  let ship=sh?Number(sh.price||0):base.ship;
+  if(sh&&sh.freeOver&&base.sub>=Number(sh.freeOver)) ship=0;
+  let disc=base.disc;
+  if(COUPON){
+    if(COUPON.type==='percent') disc+=+(base.sub*Number(COUPON.value||0)/100).toFixed(2);
+    else if(COUPON.type==='fixed') disc+=Number(COUPON.value||0);
+    else if(COUPON.type==='shipping') ship=0;
+  }
+  disc=Math.min(base.sub,Math.max(0,disc));
+  const vat=+((base.sub-disc+ship)*DB.settings.vat/100).toFixed(2);
+  return {sub:base.sub,ship,disc,vat,total:+(base.sub-disc+ship+vat).toFixed(2),sh};
+}
 function cartPage(){
   const t=cartTotals();
   $('#shop').innerHTML=`${shopNav()}<div class="sw" style="max-width:960px">
     <h1 style="font-size:30px;margin-bottom:18px">سلة التسوّق</h1>
     ${!CART.length?`<div class="card empty"><div class="dsp">سلتك فاضية</div><div class="sm">ابدأ من مختارات رفوف وأضف اللي يعجبك.</div>
       <button class="btn" style="margin-top:14px" onclick="go('/shop')">تصفّح المنتجات</button></div>`:
-    `<div class="cols" style="grid-template-columns:1.6fr 1fr">
+    `<div class="cols cart-layout">
       <div class="card pad">
         ${CART.map(i=>{const p=DB.products.find(x=>x.id===i.pid);return `<div class="crow">
           <div class="im"><img src="${p?pimg(p):''}" alt=""></div>
@@ -990,43 +1025,45 @@ function cartDel(k){ CART=CART.filter(x=>x.key!==k); DB.cart=CART; save(); cartP
 
 function checkoutPage(){
   if(!CART.length){ go('/cart'); return }
-  const t=cartTotals();
+  const firstShipping=DB.shipping.find(s=>s.active);
+  const t=checkoutTotals(firstShipping&&firstShipping.id);
   $('#shop').innerHTML=`${shopNav()}<div class="sw" style="max-width:900px">
     <div class="steps"><div>السلة</div><div class="act">بيانات الشحن والدفع</div><div>التأكيد</div></div>
-    <div class="cols" style="grid-template-columns:1.5fr 1fr">
+    <div class="cols checkout-layout">
       <div class="card pad">
         <h3 style="font-size:19px;margin-bottom:14px">بيانات المستلم</h3>
+        <div class="checkout-alert" id="checkout_alert" role="alert"></div>
         <div class="grid2">
-          <label class="field"><label>الاسم الكامل</label><input type="text" id="ck_name" placeholder="مثال: عبدالله محمد"></label>
-          <label class="field"><label>الجوال</label><input type="tel" id="ck_phone" placeholder="05XXXXXXXX"></label>
+          <div class="field" id="field_ck_name"><label for="ck_name">الاسم الكامل <span class="required">*</span></label><input type="text" id="ck_name" autocomplete="name" maxlength="100" placeholder="مثال: عبدالله محمد" oninput="clearCheckoutError('ck_name')"><div class="field-error" id="err_ck_name"></div></div>
+          <div class="field" id="field_ck_phone"><label for="ck_phone">الجوال <span class="required">*</span></label><input type="tel" id="ck_phone" autocomplete="tel" inputmode="tel" maxlength="18" placeholder="05XXXXXXXX أو +9665XXXXXXXX" oninput="clearCheckoutError('ck_phone')"><div class="field-error" id="err_ck_phone"></div></div>
         </div>
         <div class="grid2">
-          <label class="field"><label>البريد الإلكتروني</label><input type="email" id="ck_email" placeholder="name@mail.com"></label>
-          <label class="field"><label>المدينة</label><select id="ck_city">${['الرياض','جدة','مكة المكرمة','المدينة المنورة','الدمام','الخبر','بريدة','أبها','تبوك','حائل'].map(c=>`<option>${c}</option>`).join('')}</select></label>
+          <div class="field" id="field_ck_email"><label for="ck_email">البريد الإلكتروني (اختياري)</label><input type="email" id="ck_email" autocomplete="email" maxlength="160" placeholder="name@mail.com" oninput="clearCheckoutError('ck_email')"><div class="field-error" id="err_ck_email"></div></div>
+          <div class="field" id="field_ck_city"><label for="ck_city">المدينة <span class="required">*</span></label><select id="ck_city" autocomplete="address-level2" onchange="clearCheckoutError('ck_city')">${['الرياض','جدة','مكة المكرمة','المدينة المنورة','الدمام','الخبر','بريدة','أبها','تبوك','حائل'].map(c=>`<option>${c}</option>`).join('')}</select><div class="field-error" id="err_ck_city"></div></div>
         </div>
-        <label class="field"><label>العنوان بالتفصيل</label><input type="text" id="ck_addr" placeholder="الحي، الشارع، رقم المبنى"></label>
-        <label class="field"><label>ملاحظات على الطلب (اختياري)</label><textarea id="ck_note" style="min-height:70px" placeholder="مثال: اتصل قبل التوصيل"></textarea></label>
+        <div class="field" id="field_ck_addr"><label for="ck_addr">العنوان بالتفصيل <span class="required">*</span></label><input type="text" id="ck_addr" autocomplete="street-address" maxlength="300" placeholder="الحي، الشارع، رقم المبنى" oninput="clearCheckoutError('ck_addr')"><div class="field-error" id="err_ck_addr"></div></div>
+        <div class="field"><label for="ck_note">ملاحظات على الطلب (اختياري)</label><textarea id="ck_note" maxlength="500" style="min-height:70px" placeholder="مثال: اتصل قبل التوصيل"></textarea></div>
         <h3 style="font-size:19px;margin:18px 0 12px">طريقة الشحن</h3>
-        ${DB.shipping.filter(s=>s.active).map((s,i)=>`<label class="card pad row" style="margin-bottom:9px;cursor:pointer;padding:12px 14px">
-          <input type="radio" name="shp" value="${s.id}" ${i===0?'checked':''} style="width:auto">
+        <div class="checkout-group" id="field_ck_shipping">${DB.shipping.filter(s=>s.active).map((s,i)=>`<label class="card pad row" style="margin-bottom:9px;cursor:pointer;padding:12px 14px">
+          <input type="radio" name="shp" value="${s.id}" ${i===0?'checked':''} style="width:auto" onchange="clearCheckoutError('ck_shipping');refreshCheckoutSummary()">
           <div class="grow"><b>${esc(s.name)}</b><div class="tiny muted">${esc(s.eta)} · ${esc(s.cities)}</div></div>
-          <span class="mono">${s.price?money(s.price):'مجاني'}</span></label>`).join('')}
+          <span class="mono">${s.price?money(s.price):'مجاني'}</span></label>`).join('')}<div class="field-error" id="err_ck_shipping"></div></div>
         <h3 style="font-size:19px;margin:18px 0 12px">طريقة الدفع</h3>
-        ${DB.payments.filter(m=>m.enabled).map((m,i)=>`<label class="card pad row" style="margin-bottom:9px;cursor:pointer;padding:12px 14px">
-          <input type="radio" name="pay" value="${esc(m.name)}" ${i===0?'checked':''} style="width:auto">
-          <div class="grow"><b>${esc(m.name)}</b></div></label>`).join('')}
+        <div class="checkout-group" id="field_ck_payment">${DB.payments.filter(m=>m.enabled).map((m,i)=>`<label class="card pad row" style="margin-bottom:9px;cursor:pointer;padding:12px 14px">
+          <input type="radio" name="pay" value="${esc(m.name)}" ${i===0?'checked':''} style="width:auto" onchange="clearCheckoutError('ck_payment')">
+          <div class="grow"><b>${esc(m.name)}</b></div></label>`).join('')}<div class="field-error" id="err_ck_payment"></div></div>
       </div>
-      <div><div class="card pad" style="position:sticky;top:80px">
+      <div><div class="card pad checkout-summary">
         <h3 style="font-size:19px;margin-bottom:10px">ملخّص الطلب</h3>
         ${CART.map(i=>`<div class="spread sm" style="padding:4px 0"><span>${esc(i.name)} <span class="mono muted">×${i.qty}</span></span><span class="mono">${money(i.price*i.qty)}</span></div>`).join('')}
         <div style="border-top:1px solid var(--line-2);margin:10px 0"></div>
-        <div class="row" style="margin-bottom:10px"><input type="text" id="cpn" placeholder="كود الخصم" style="padding:8px 10px"><button class="btn soft sm" onclick="applyCoupon()">تطبيق</button></div>
+        <div class="row" style="margin-bottom:10px"><input type="text" id="cpn" autocomplete="off" maxlength="40" placeholder="كود الخصم" style="padding:8px 10px" onkeydown="if(event.key==='Enter'){event.preventDefault();applyCoupon()}"><button class="btn soft sm" onclick="applyCoupon()">تطبيق</button></div>
         <div id="cpnMsg"></div>
-        <div class="sumline"><span>المجموع</span><span class="mono">${money(t.sub)}</span></div>
-        ${t.disc?`<div class="sumline" style="color:var(--ok)"><span>خصم الإحالة</span><span class="mono">−${money(t.disc)}</span></div>`:''}
-        <div class="sumline"><span>الشحن</span><span class="mono">${t.ship?money(t.ship):'مجاني'}</span></div>
-        <div class="sumline"><span>الضريبة ${DB.settings.vat}%</span><span class="mono">${money(t.vat)}</span></div>
-        <div class="sumline tot"><span>الإجمالي</span><span class="mono">${money(t.total)} ر.س</span></div>
+        <div class="sumline"><span>المجموع</span><span class="mono" id="ck_sum_sub">${money(t.sub)}</span></div>
+        <div class="sumline" id="ck_sum_disc_row" style="color:var(--ok);display:${t.disc?'flex':'none'}"><span>الخصم</span><span class="mono" id="ck_sum_disc">−${money(t.disc)}</span></div>
+        <div class="sumline"><span>الشحن</span><span class="mono" id="ck_sum_ship">${t.ship?money(t.ship):'مجاني'}</span></div>
+        <div class="sumline"><span>الضريبة ${DB.settings.vat}%</span><span class="mono" id="ck_sum_vat">${money(t.vat)}</span></div>
+        <div class="sumline tot"><span>الإجمالي</span><span class="mono" id="ck_sum_total">${money(t.total)} ر.س</span></div>
         <button class="btn block lg" id="place_order_btn" style="margin-top:14px" onclick="placeOrder()">تأكيد الطلب والدفع</button>
         ${REF?`<div class="tiny center muted" style="margin-top:9px">الطلب مرتبط بالمسوّق <b class="mono">${esc(REF)}</b></div>`:''}
       </div></div>
@@ -1034,43 +1071,87 @@ function checkoutPage(){
   </div>${shopFoot()}`;
 }
 let COUPON=null;
+function clearCheckoutError(id){
+  const box=$('#field_'+id), err=$('#err_'+id);
+  if(box) box.classList.remove('has-error');
+  if(err) err.textContent='';
+  const alert=$('#checkout_alert');
+  if(alert) alert.classList.remove('on');
+}
+function setCheckoutError(id,message){
+  const box=$('#field_'+id), err=$('#err_'+id);
+  if(box) box.classList.add('has-error');
+  if(err) err.textContent=message;
+}
+function validateCheckout(){
+  ['ck_name','ck_phone','ck_email','ck_city','ck_addr','ck_shipping','ck_payment'].forEach(clearCheckoutError);
+  const g=id=>($('#'+id)?.value||'').trim();
+  const data={name:g('ck_name'),phone:normalizeSaudiPhone(g('ck_phone')),email:g('ck_email').toLowerCase(),city:g('ck_city'),address:g('ck_addr'),note:g('ck_note'),
+    shippingMethodId:$('input[name=shp]:checked')?.value||'',payment:$('input[name=pay]:checked')?.value||''};
+  let first='';
+  const fail=(id,message)=>{setCheckoutError(id,message);if(!first)first=id};
+  if(data.name.length<2) fail('ck_name','اكتب الاسم الكامل (حرفان على الأقل).');
+  if(!data.phone) fail('ck_phone','أدخل رقمًا سعوديًا صحيحًا مثل 05XXXXXXXX أو +9665XXXXXXXX.');
+  if(data.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) fail('ck_email','تحقق من صيغة البريد الإلكتروني.');
+  if(data.city.length<2) fail('ck_city','اختر المدينة.');
+  if(data.address.length<5) fail('ck_addr','اكتب الحي والشارع ورقم المبنى (5 أحرف على الأقل).');
+  if(!data.shippingMethodId) fail('ck_shipping','اختر طريقة الشحن.');
+  if(!data.payment) fail('ck_payment','اختر طريقة الدفع.');
+  if(first){
+    const alert=$('#checkout_alert');
+    if(alert){alert.textContent='راجع الحقول المعلّمة أدناه ثم حاول مرة أخرى.';alert.classList.add('on')}
+    const target=first==='ck_shipping'?$('input[name=shp]'):first==='ck_payment'?$('input[name=pay]'):$('#'+first);
+    target?.focus(); target?.scrollIntoView({behavior:'smooth',block:'center'});
+    toast('راجع الحقول المعلّمة','err');
+    return null;
+  }
+  $('#ck_phone').value=data.phone;
+  return data;
+}
+function refreshCheckoutSummary(){
+  const shipId=$('input[name=shp]:checked')?.value;
+  const t=checkoutTotals(shipId);
+  const put=(id,value)=>{const e=$('#'+id);if(e)e.textContent=value};
+  put('ck_sum_sub',money(t.sub));
+  put('ck_sum_disc','−'+money(t.disc));
+  put('ck_sum_ship',t.ship?money(t.ship):'مجاني');
+  put('ck_sum_vat',money(t.vat));
+  put('ck_sum_total',money(t.total)+' ر.س');
+  const row=$('#ck_sum_disc_row'); if(row) row.style.display=t.disc?'flex':'none';
+}
 async function applyCoupon(){
   let m=$('#cpnMsg'); const code=$('#cpn').value.trim();
+  if(!code){ COUPON=null; m.innerHTML=`<div class="sm" style="color:var(--danger);margin-bottom:8px">أدخل كود الخصم أولًا.</div>`; refreshCheckoutSummary(); return }
   if(SB.on){
     try{ const r=await sbRpc('check_coupon',{p_code:code,p_sub:cartTotals().sub});
       m=$('#cpnMsg')||m;
-      if(r&&r.ok){ COUPON=r.coupon; m.innerHTML=`<div class="sm" style="color:var(--ok);margin-bottom:8px">${svg('chk')} طُبّق كود ${esc(r.coupon.code)}.</div>`; return }
-      COUPON=null; m.innerHTML=`<div class="sm" style="color:var(--danger);margin-bottom:8px">${esc(r?r.msg:'الكود غير صالح')}</div>`; return;
+      if(r&&r.ok){ COUPON=r.coupon; m.innerHTML=`<div class="sm" style="color:var(--ok);margin-bottom:8px">${svg('chk')} طُبّق كود ${esc(r.coupon.code)}.</div>`; refreshCheckoutSummary(); return }
+      COUPON=null; m.innerHTML=`<div class="sm" style="color:var(--danger);margin-bottom:8px">${esc(r?r.msg:'الكود غير صالح')}</div>`; refreshCheckoutSummary(); return;
     }catch(e){}
   }
   const c=DB.coupons.find(x=>x.code.toUpperCase()===code.toUpperCase());
-  if(!c||!c.active||new Date(c.expires)<new Date()){ m.innerHTML=`<div class="sm" style="color:var(--danger);margin-bottom:8px">الكود غير صالح أو منتهي.</div>`; COUPON=null; return }
+  if(!c||!c.active||new Date(c.expires)<new Date()){ m.innerHTML=`<div class="sm" style="color:var(--danger);margin-bottom:8px">الكود غير صالح أو منتهي.</div>`; COUPON=null; refreshCheckoutSummary(); return }
   const t=cartTotals();
-  if(t.sub<c.minOrder){ m.innerHTML=`<div class="sm" style="color:var(--warn);margin-bottom:8px">الكود يحتاج حد أدنى ${money(c.minOrder)} ر.س.</div>`; COUPON=null; return }
+  if(t.sub<c.minOrder){ m.innerHTML=`<div class="sm" style="color:var(--warn);margin-bottom:8px">الكود يحتاج حد أدنى ${money(c.minOrder)} ر.س.</div>`; COUPON=null; refreshCheckoutSummary(); return }
   COUPON=c; m.innerHTML=`<div class="sm" style="color:var(--ok);margin-bottom:8px">${svg('chk')} طُبّق كود ${esc(c.code)}.</div>`;
+  refreshCheckoutSummary();
 }
 async function placeOrder(){
-  const g=id=>($('#'+id)?.value||'').trim();
-  if(!g('ck_name')||!g('ck_phone')||!g('ck_addr')){ toast('اكمل الاسم والجوال والعنوان','err'); return }
-  const shipId=$('input[name=shp]:checked')?.value; const sh=DB.shipping.find(s=>s.id===shipId)||DB.shipping[0];
-  const t=cartTotals();
-  let ship=sh.price; if(sh.freeOver&&t.sub>=sh.freeOver) ship=0;
-  let disc=t.disc;
-  if(COUPON){ if(COUPON.type==='percent') disc+=+(t.sub*COUPON.value/100).toFixed(2);
-    else if(COUPON.type==='fixed') disc+=COUPON.value; else if(COUPON.type==='shipping') ship=0; }
-  const vat=+((t.sub-disc+ship)*DB.settings.vat/100).toFixed(2);
-  const total=+(t.sub-disc+ship+vat).toFixed(2);
-  let cu=DB.customers.find(c=>c.phone===g('ck_phone'));
+  const form=validateCheckout(); if(!form)return;
+  const sh=DB.shipping.find(s=>s.id===form.shippingMethodId);
+  if(!sh){ setCheckoutError('ck_shipping','طريقة الشحن غير متاحة حاليًا.'); return }
+  const t=checkoutTotals(form.shippingMethodId);
+  let cu=DB.customers.find(c=>normalizeSaudiPhone(c.phone)===form.phone);
   const isNewCustomer=!cu;
-  if(!cu){ cu={id:uid('u'),name:g('ck_name'),phone:g('ck_phone'),email:g('ck_email'),city:g('ck_city'),createdAt:nowISO(),notes:''} }
+  if(!cu){ cu={id:uid('u'),name:form.name,phone:form.phone,email:form.email,city:form.city,createdAt:nowISO(),notes:''} }
   const aff=REF?DB.affiliates.find(a=>a.code===REF&&a.status==='active'):null;
   const num=DB.settings.ordersPrefix+(1041+DB.orders.length+1);
-  const o={id:uid('o'),number:num,customerId:cu.id,customer:{name:g('ck_name'),phone:g('ck_phone'),email:g('ck_email')},
-    city:g('ck_city'),address:g('ck_addr'),items:CART.map(i=>({pid:i.pid,name:i.name,sku:i.sku,price:i.price,qty:i.qty,opt:i.opt})),
-    subtotal:t.sub,shipping:ship,discount:disc,vat,total,coupon:COUPON?COUPON.code:'',shippingMethod:sh.name,shippingMethodId:sh.id,
+  const o={id:uid('o'),number:num,customerId:cu.id,customer:{name:form.name,phone:form.phone,email:form.email},
+    city:form.city,address:form.address,items:CART.map(i=>({pid:i.pid,name:i.name,sku:i.sku,price:i.price,qty:i.qty,opt:i.opt})),
+    subtotal:t.sub,shipping:t.ship,discount:t.disc,vat:t.vat,total:t.total,coupon:COUPON?COUPON.code:'',shippingMethod:sh.name,shippingMethodId:sh.id,
     affiliateCode:aff?aff.code:'',commission:aff?(aff.commissionType==='percent'?+(t.sub*aff.commissionValue/100).toFixed(2):aff.commissionValue):0,
-    commissionPaid:false,payment:$('input[name=pay]:checked')?.value||'مدى',status:'new',createdAt:nowISO(),
-    timeline:[{t:nowISO(),s:'تم إنشاء الطلب'}],note:g('ck_note')};
+    commissionPaid:false,payment:form.payment,status:'new',createdAt:nowISO(),
+    timeline:[{t:nowISO(),s:'تم إنشاء الطلب'}],note:form.note};
   const btn=$('#place_order_btn');
   if(btn){ if(btn.disabled)return; btn.disabled=true; btn.textContent='جاري حفظ الطلب…' }
   if(SB.on){
@@ -1088,7 +1169,7 @@ async function placeOrder(){
   if(isNewCustomer) DB.customers.push(cu);
   DB.orders.unshift(o);
   o.items.forEach(i=>{const p=DB.products.find(x=>x.id===i.pid); if(p){p.stock=Math.max(0,p.stock-i.qty); p.sold+=i.qty}});
-  if(COUPON) COUPON.used++;
+  if(COUPON) COUPON.used=(Number(COUPON.used)||0)+1;
   DB.notifications.unshift({id:uid('n'),t:'طلب جديد '+o.number+' بقيمة '+money(o.total)+' ر.س',time:nowISO(),read:false});
   CART=[]; DB.cart=[]; COUPON=null;
   if(SB.on){ SNAP=snapshot(); Store.set(KEY,DB) } else save();
@@ -1116,16 +1197,18 @@ function trackPage(){
   $('#shop').innerHTML=`${shopNav()}<div class="sw" style="max-width:620px">
     <h1 style="font-size:29px">تتبّع طلبك</h1><p class="muted" style="margin:5px 0 18px">أدخل رقم الطلب ورقم الجوال المستخدم فيه لحماية بياناتك.</p>
     <div class="card pad"><div class="grid2">
-      <label class="field"><label>رقم الطلب</label><input type="text" id="trk_num" placeholder="#1052"></label>
-      <label class="field"><label>رقم الجوال</label><input type="tel" id="trk_phone" placeholder="05XXXXXXXX" onkeydown="if(event.key==='Enter')doTrack()"></label>
+      <div class="field"><label for="trk_num">رقم الطلب</label><input type="text" id="trk_num" autocomplete="off" placeholder="#1052"></div>
+      <div class="field"><label for="trk_phone">رقم الجوال</label><input type="tel" id="trk_phone" autocomplete="tel" inputmode="tel" placeholder="05XXXXXXXX أو +9665XXXXXXXX" onkeydown="if(event.key==='Enter')doTrack()"></div>
     </div><button class="btn block" onclick="doTrack()">عرض حالة الطلب</button><div id="trkRes" style="margin-top:16px"></div></div>
   </div>${shopFoot()}`;
 }
 async function doTrack(){
-  const num=$('#trk_num').value.trim().replace('#',''), phone=$('#trk_phone').value.trim().replace(/\D/g,'');
+  const num=$('#trk_num').value.trim().replace('#',''), phone=normalizeSaudiPhone($('#trk_phone').value);
   const r=$('#trkRes'); if(!r) return;
-  if(!num||!phone){ r.innerHTML=`<div class="sm" style="color:var(--danger)">أدخل رقم الطلب ورقم الجوال.</div>`; return }
-  let o=DB.orders.find(x=>x.number.replace('#','')===num&&x.customer.phone.replace(/\D/g,'')===phone);
+  if(!num){ r.innerHTML=`<div class="sm" style="color:var(--danger)">أدخل رقم الطلب.</div>`; return }
+  if(!phone){ r.innerHTML=`<div class="sm" style="color:var(--danger)">أدخل رقمًا سعوديًا صحيحًا مثل 05XXXXXXXX أو +9665XXXXXXXX.</div>`; return }
+  $('#trk_phone').value=phone;
+  let o=DB.orders.find(x=>x.number.replace('#','')===num&&normalizeSaudiPhone(x.customer.phone)===phone);
   if(!o&&SB.on){ try{ const c=await sbRpc('track_order',{p_number:num,p_phone:phone}); if(c) o=c }catch(e){} }
   if(!o){ r.innerHTML=`<div class="empty" style="padding:26px"><div class="dsp">ما لقينا طلب بهالرقم</div><div class="sm">تأكد من رقم الطلب أو الجوال وحاول مرة ثانية.</div></div>`; return }
   const steps=[['new','استلمنا الطلب'],['paid','تم الدفع'],['processing','قيد التجهيز'],['shipped','خرج للشحن'],['delivered','تم التسليم']];
@@ -2539,6 +2622,13 @@ begin
 
   customer_name := trim(left(coalesce(p_customer->>'name', ''), 100));
   customer_phone := regexp_replace(coalesce(p_customer->>'phone', ''), '[^0-9]', '', 'g');
+  if customer_phone ~ '^009665[0-9]{8}$' then
+    customer_phone := '0' || substring(customer_phone from 6);
+  elsif customer_phone ~ '^9665[0-9]{8}$' then
+    customer_phone := '0' || substring(customer_phone from 4);
+  elsif customer_phone ~ '^5[0-9]{8}$' then
+    customer_phone := '0' || customer_phone;
+  end if;
   customer_email := lower(trim(left(coalesce(p_customer->>'email', ''), 160)));
   customer_city := trim(left(coalesce(p_order->>'city', ''), 80));
   customer_address := trim(left(coalesce(p_order->>'address', ''), 300));
@@ -2789,6 +2879,13 @@ declare
 begin
   clean_number := replace(trim(coalesce(p_number, '')), '#', '');
   clean_phone := regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g');
+  if clean_phone ~ '^009665[0-9]{8}$' then
+    clean_phone := '0' || substring(clean_phone from 6);
+  elsif clean_phone ~ '^9665[0-9]{8}$' then
+    clean_phone := '0' || substring(clean_phone from 4);
+  elsif clean_phone ~ '^5[0-9]{8}$' then
+    clean_phone := '0' || clean_phone;
+  end if;
   if clean_number = ''
      or char_length(clean_number) > 30
      or clean_phone !~ '^05[0-9]{8}$' then
