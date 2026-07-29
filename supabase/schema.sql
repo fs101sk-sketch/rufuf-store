@@ -431,6 +431,13 @@ begin
 
   customer_name := trim(left(coalesce(p_customer->>'name', ''), 100));
   customer_phone := regexp_replace(coalesce(p_customer->>'phone', ''), '[^0-9]', '', 'g');
+  if customer_phone ~ '^009665[0-9]{8}$' then
+    customer_phone := '0' || substring(customer_phone from 6);
+  elsif customer_phone ~ '^9665[0-9]{8}$' then
+    customer_phone := '0' || substring(customer_phone from 4);
+  elsif customer_phone ~ '^5[0-9]{8}$' then
+    customer_phone := '0' || customer_phone;
+  end if;
   customer_email := lower(trim(left(coalesce(p_customer->>'email', ''), 160)));
   customer_city := trim(left(coalesce(p_order->>'city', ''), 80));
   customer_address := trim(left(coalesce(p_order->>'address', ''), 300));
@@ -681,6 +688,13 @@ declare
 begin
   clean_number := replace(trim(coalesce(p_number, '')), '#', '');
   clean_phone := regexp_replace(coalesce(p_phone, ''), '[^0-9]', '', 'g');
+  if clean_phone ~ '^009665[0-9]{8}$' then
+    clean_phone := '0' || substring(clean_phone from 6);
+  elsif clean_phone ~ '^9665[0-9]{8}$' then
+    clean_phone := '0' || substring(clean_phone from 4);
+  elsif clean_phone ~ '^5[0-9]{8}$' then
+    clean_phone := '0' || clean_phone;
+  end if;
   if clean_number = ''
      or char_length(clean_number) > 30
      or clean_phone !~ '^05[0-9]{8}$' then
