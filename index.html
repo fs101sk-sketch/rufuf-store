@@ -611,9 +611,9 @@ function renderLogin(){
       <h2 style="font-size:24px">تسجيل الدخول</h2>
       <p class="muted sm" style="margin:4px 0 18px">ادخل باسم المستخدم وكلمة المرور للوصول للوحة التحكم.</p>
       <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">${cloud?'البريد الإلكتروني':'اسم المستخدم'}</span>
-        <input type="text" id="lu" value="${cloud?esc(SB.email):''}" autocomplete="username" placeholder="${cloud?'name@mail.com':''}"></label>
+        <input type="${cloud?'email':'text'}" id="lu" value="${cloud?esc(SB.email):''}" autocomplete="username" inputmode="${cloud?'email':'text'}" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${cloud?'name@mail.com':''}"></label>
       <label class="field"><span style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">كلمة المرور</span>
-        <input type="password" id="lp" value="" autocomplete="current-password"></label>
+        <input type="password" id="lp" value="" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
       <div id="lerr" class="hide" style="color:var(--danger);font-size:13px;margin-bottom:10px"></div>
       <button class="btn block lg" onclick="doLogin()">دخول للوحة التحكم</button>
       ${cloud?`<div class="cred" style="background:var(--petrol-soft);border-color:#A9CBD8">
@@ -631,8 +631,17 @@ function renderLogin(){
   </div>`;
   $('#lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 }
+function cleanLoginText(value){
+  return String(value||'')
+    .replace(/[\u061C\u200B-\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/g,'')
+    .trim();
+}
 async function doLogin(){
-  const u=$('#lu').value.trim(), p=$('#lp').value, e=$('#lerr');
+  const u=cleanLoginText($('#lu').value).toLowerCase();
+  const p=cleanLoginText($('#lp').value);
+  const e=$('#lerr');
+  $('#lu').value=u;
+  $('#lp').value=p;
   if(SB.on){
     e.classList.remove('hide'); e.style.color='var(--muted)'; e.textContent='جاري التحقق…';
     try{
@@ -648,7 +657,10 @@ async function doLogin(){
       if(empty) setTimeout(()=>toast('قاعدة البيانات فارغة — اضغط «رفع البيانات الحالية»'),600);
       return;
     }catch(err){ const el=$('#lerr')||e; el.classList.remove('hide'); el.style.color='var(--danger)';
-      el.textContent='تعذّر الدخول: '+err.message; return }
+      el.textContent=/invalid login credentials/i.test(err.message)
+        ?'تعذّر الدخول: البريد أو كلمة المرور غير مطابقين. أعد كتابة كلمة المرور بلوحة مفاتيح إنجليزية.'
+        :'تعذّر الدخول: '+err.message;
+      return }
   }
   const s=DB.staff.find(x=>x.username===u&&x.password===p&&x.active);
   if(!s){ e.classList.remove('hide'); e.style.color='var(--danger)'; e.textContent='اسم المستخدم أو كلمة المرور غير صحيحة.'; return }
@@ -2159,7 +2171,12 @@ let SNAP=null,pushT=null,pushing=false,pullTimer=null;
 
 async function sbLoadCfg(){
   const c=await Store.get(CFGKEY); if(c) Object.assign(SB,c);
-  if(SB_PRESET_URL&&SB_PRESET_KEY&&!SB.url){ SB.url=SB_PRESET_URL; SB.anon=SB_PRESET_KEY; SB.on=true; sbSaveCfg(); }
+  if(SB_PRESET_URL&&SB_PRESET_KEY){
+    const presetChanged=SB.url!==SB_PRESET_URL||SB.anon!==SB_PRESET_KEY;
+    SB.url=SB_PRESET_URL; SB.anon=SB_PRESET_KEY; SB.on=true;
+    if(presetChanged){ SB.token=''; SB.refresh=''; SB.exp=0; }
+    sbSaveCfg();
+  }
   if(SB.on) SB.status=SB.token?'ok':'auth';
 }
 function sbSaveCfg(){ Store.set(CFGKEY,{url:SB.url,anon:SB.anon,on:SB.on,auto:SB.auto,token:SB.token,
