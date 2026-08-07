@@ -1,0 +1,30 @@
+{
+  "id": "./",
+  "name": "مَجْلِسْ — سين جيم بروح المجلس",
+  "short_name": "مَجْلِسْ",
+  "description": "لعبة أسئلة جماعية لفريقين بروح المجلس السعودي.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#170F09",
+  "theme_color": "#241609",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -3,8 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://wsgmzstwgtijrefqztxk.supabase.co; img-src 'self' data: blob:; media-src 'self' data: blob: https://wsgmzstwgtijrefqztxk.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
+<meta name="theme-color" content="#241609">
+<meta name="color-scheme" content="dark">
+<meta name="application-name" content="مَجْلِسْ">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مَجْلِسْ">
+<meta name="mobile-web-app-capable" content="yes">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://wsgmzstwgtijrefqztxk.supabase.co; img-src 'self' data: blob:; media-src 'self' data: blob: https://wsgmzstwgtijrefqztxk.supabase.co; worker-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
 <title>مَجْلِسْ | سين جيم بروح المجلس</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Reem+Kufi:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -273,7 +283,7 @@ body.presenting-mode .topbar-btns .hide-in-present { display: none !important; }
 .buzzer-btn { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle, var(--ember) 0%, var(--sadu-red-deep) 100%); border: 6px solid var(--brass); box-shadow: 0 0 26px rgba(217,114,61,0.5), inset 0 0 15px rgba(0,0,0,0.35); color: var(--parchment); font-family: var(--font-display); font-size: 1.25rem; cursor: pointer; display: block; margin: 8px auto 20px; }
 .buzzer-btn:active { transform: scale(0.92); }
 .canvas-area { background: var(--cream); border-radius: 12px; overflow: hidden; margin-bottom: 14px; border: 2px solid var(--brass); }
-canvas { display: block; cursor: crosshair; max-width: 100%; }
+canvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
 .canvas-ctrls { display: flex; gap: 8px; margin-bottom: 16px; }
 .canvas-btn { background: var(--coffee-800); color: var(--parchment); border: 1px solid var(--sand); padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); flex: 1; min-height: 42px; }
 .canvas-btn.primary { background: var(--sage); color: var(--ink); border-color: var(--sage); font-weight: 700; }
@@ -373,14 +383,72 @@ canvas { display: block; cursor: crosshair; max-width: 100%; }
 .auth-card .auth-help { font-size: .76rem; color: var(--sand); margin-top: 14px; line-height: 1.8; text-align: center; }
 .account-pill { cursor: default; opacity: .8; }
 
+/* ============ التثبيت والتحديث ============ */
+.pwa-install-button {
+    position: fixed; left: max(14px, env(safe-area-inset-left));
+    bottom: max(14px, env(safe-area-inset-bottom)); z-index: 3200;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 11px 18px; border: 1.5px solid var(--brass-bright);
+    border-radius: 999px; background: var(--brass); color: var(--ink);
+    box-shadow: 0 10px 30px rgba(0,0,0,.48); cursor: pointer;
+    font-family: var(--font-body); font-weight: 900; font-size: .9rem;
+}
+.pwa-install-button:hover { background: var(--brass-bright); }
+.pwa-install-button[hidden] { display: none !important; }
+.pwa-help {
+    position: fixed; inset: 0; z-index: 3400; display: grid; place-items: center;
+    padding: 20px; background: rgba(10,7,4,.82); backdrop-filter: blur(5px);
+}
+.pwa-help[hidden] { display: none; }
+.pwa-help-card {
+    width: min(100%, 440px); max-height: min(88vh, 620px); overflow-y: auto;
+    background: var(--coffee-800); border: 1.5px solid var(--brass);
+    border-radius: 18px; padding: 24px; box-shadow: 0 24px 70px rgba(0,0,0,.6);
+}
+.pwa-help-card h2 { font-family: var(--font-display); color: var(--brass-bright); margin-bottom: 10px; }
+.pwa-help-card p { color: var(--sand); line-height: 1.9; font-size: .9rem; }
+.pwa-help-steps { margin: 16px 0; padding: 0 22px 0 0; color: var(--parchment); line-height: 2; }
+.pwa-help-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.pwa-update-banner {
+    position: fixed; right: 50%; bottom: max(14px, env(safe-area-inset-bottom));
+    transform: translateX(50%); z-index: 3300; width: min(92vw, 520px);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--brass); border-radius: 14px;
+    background: var(--coffee-800); color: var(--parchment); box-shadow: 0 12px 36px rgba(0,0,0,.55);
+    font-size: .85rem; font-weight: 700;
+}
+.pwa-update-banner[hidden] { display: none; }
+@media (display-mode: standalone) { .pwa-install-button { display: none !important; } }
+
 @media (max-width: 640px) {
     .hero h1 { font-size: 2.4rem; }
     .question-text { font-size: 1.25rem; }
     .sj-cat { grid-template-columns: 56px 1fr 56px; }
+    .pwa-install-button { min-height: 46px; padding: 10px 15px; font-size: .82rem; }
 }
 </style>
 </head>
 <body>
+
+<button id="pwa-install-button" class="pwa-install-button" type="button" hidden>
+    <span aria-hidden="true">⬇</span> تثبيت التطبيق
+</button>
+
+<div id="pwa-install-help" class="pwa-help" role="dialog" aria-modal="true" aria-labelledby="pwa-help-title" hidden>
+    <div class="pwa-help-card sadu-frame">
+        <h2 id="pwa-help-title">تثبيت مَجْلِسْ</h2>
+        <p id="pwa-help-intro">يمكنك تثبيت اللعبة وفتحها كتطبيق مستقل.</p>
+        <ol id="pwa-help-steps" class="pwa-help-steps"></ol>
+        <div class="pwa-help-actions">
+            <button id="pwa-help-close" class="btn btn-brass" type="button">فهمت</button>
+        </div>
+    </div>
+</div>
+
+<div id="pwa-update-banner" class="pwa-update-banner" role="status" hidden>
+    <span>يتوفر تحديث جديد للعبة.</span>
+    <button id="pwa-update-button" class="btn btn-brass" type="button">تحديث الآن</button>
+</div>
 
 <section id="auth-gate" class="auth-gate">
     <div class="auth-card sadu-frame">
@@ -677,7 +745,7 @@ canvas { display: block; cursor: crosshair; max-width: 100%; }
             <div class="q-banners" id="q-banners"></div>
             <div class="live-drawing-box" id="tv-canvas-box">
                 <span style="color: rgba(239,224,196,0.25);" id="tv-canvas-placeholder">بانتظار رسم اللاعب من جواله...</span>
-                <img id="tv-mirrored-image" style="display:none; width:100%; height:100%; object-fit:contain;" />
+                <img id="tv-mirrored-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="رسم اللاعب" style="display:none; width:100%; height:100%; object-fit:contain;">
             </div>
             <div class="q-emoji-line" id="tv-emoji-display"></div>
         </div>
@@ -759,6 +827,7 @@ let isAdmin = false;
 const MAJLIS_SB_URL = 'https://wsgmzstwgtijrefqztxk.supabase.co';
 const MAJLIS_SB_KEY = 'sb_publishable_AWmbWXKY4VrOU50bwDgG4g_7vOGoGd6';
 const MAJLIS_AUTH_KEY = 'rufuf_majlis_auth_v1';
+const MAJLIS_GAME_STATE_PREFIX = 'rufuf_majlis_game_v1:';
 const MAJLIS_PLAYER_DOMAIN = 'players.rufuf.sa';
 let majlisAuth = null;
 
@@ -857,12 +926,14 @@ async function openMajlisApp() {
     }
 
     await loadMajlisLibrary();
+    const restoredState = restoreGameState();
     document.getElementById('library-nav').hidden = !isAdmin;
     document.getElementById('account-label').textContent =
         isAdmin ? '👑 المالك' : `👤 ${user.user_metadata?.username || String(user.email || '').split('@')[0]}`;
     document.getElementById('auth-gate').hidden = true;
     document.getElementById('majlis-app').hidden = false;
     renderGameView();
+    if (restoredState?.current && current) renderPersistedQuestion(restoredState);
 }
 
 async function majlisSignIn() {
@@ -898,6 +969,7 @@ async function majlisSignIn() {
 }
 
 function majlisLogout() {
+    persistGameState();
     localStorage.removeItem(MAJLIS_AUTH_KEY);
     location.reload();
 }
@@ -951,6 +1023,111 @@ function newGameObject(selectedCats, nameA, nameB, playersA, playersB) {
             b: { name: nameB, players: playersB, score: 0, lifelines: { double: true, time: true, two: true } }
         }
     };
+}
+
+function gameStateKey() {
+    const userId = majlisAuth?.user?.id;
+    return userId ? MAJLIS_GAME_STATE_PREFIX + userId : null;
+}
+
+function persistGameState() {
+    const key = gameStateKey();
+    if (!key) return;
+    try {
+        if (!game) {
+            localStorage.removeItem(key);
+            return;
+        }
+        const banners = current
+            ? [...document.querySelectorAll('#q-banners .q-banner')].map(node => node.textContent)
+            : [];
+        localStorage.setItem(key, JSON.stringify({
+            version: 1,
+            savedAt: new Date().toISOString(),
+            game: Object.assign({}, game, { usedQuestionIds: [...game.usedQuestionIds] }),
+            current: current ? {
+                catId: current.catId,
+                tier: current.tier,
+                slot: current.slot,
+                qId: current.q.id,
+                doubleFor: current.doubleFor || null,
+                twoFor: current.twoFor || null
+            } : null,
+            timerSeconds,
+            timerRunning: Boolean(timerInterval),
+            qMinimized,
+            answerVisible: Boolean(current && document.getElementById('q-phase-2').style.display !== 'none'),
+            banners,
+            presenting: document.body.classList.contains('presenting-mode')
+        }));
+    } catch (error) {
+        console.warn('تعذّر حفظ حالة الجولة', error);
+    }
+}
+
+function restoreGameState() {
+    const key = gameStateKey();
+    if (!key) return null;
+    try {
+        const saved = JSON.parse(localStorage.getItem(key) || 'null');
+        if (!saved?.game || saved.version !== 1 || !Array.isArray(saved.game.selectedCats)) return null;
+        const validCategories = new Set(library.categories.map(category => category.id));
+        if (!saved.game.selectedCats.every(categoryId => validCategories.has(categoryId))) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        saved.game.usedQuestionIds = new Set(saved.game.usedQuestionIds || []);
+        game = saved.game;
+        timerSeconds = Math.max(0, Number(saved.timerSeconds ?? TIMER_TOTAL));
+        qMinimized = Boolean(saved.qMinimized);
+        document.body.classList.toggle('presenting-mode', Boolean(saved.presenting));
+        if (saved.current) {
+            const question = library.questions.find(item => item.id === saved.current.qId);
+            if (question) current = Object.assign({}, saved.current, { q: question });
+        }
+        return saved;
+    } catch (error) {
+        localStorage.removeItem(key);
+        console.warn('تم تجاهل حالة جولة غير صالحة', error);
+        return null;
+    }
+}
+
+function renderPersistedQuestion(saved) {
+    const { catId, tier, q } = current;
+    const cat = library.categories.find(item => item.id === catId);
+    if (!cat || !q) {
+        current = null;
+        persistGameState();
+        return;
+    }
+    const points = TIERS[tier].points * roundMultiplier();
+    document.getElementById('q-category').innerText = `${cat.icon} ${cat.name} · ${TIERS[tier].label}`;
+    document.getElementById('q-points').innerText = `${points} نقطة`;
+    document.getElementById('q-text').innerText = q.text;
+    document.getElementById('answer-text').innerText = q.answer;
+    document.getElementById('q-banners').innerHTML = '';
+    (saved.banners || []).forEach(addBanner);
+
+    const audioEl = document.getElementById('q-audio');
+    if (q.audio) { audioEl.src = q.audio; audioEl.style.display = 'block'; }
+    else { audioEl.removeAttribute('src'); audioEl.style.display = 'none'; }
+
+    document.getElementById('tv-canvas-box').style.display = (catId === 'cat_draw') ? 'flex' : 'none';
+    document.getElementById('tv-mirrored-image').style.display = 'none';
+    document.getElementById('tv-canvas-placeholder').style.display = 'block';
+    document.getElementById('tv-emoji-display').innerText = '';
+    document.getElementById('who-a').innerText = '☕ ' + game.teams.a.name;
+    document.getElementById('who-b').innerText = '🌴 ' + game.teams.b.name;
+
+    renderQuestionLifelines();
+    document.getElementById('q-phase-1').style.display = saved.answerVisible ? 'none' : 'block';
+    document.getElementById('q-phase-2').style.display = saved.answerVisible ? 'block' : 'none';
+    renderTimer();
+    document.getElementById('q-overlay').style.display = qMinimized ? 'none' : 'flex';
+    document.getElementById('restore-q-pill').classList.toggle('show', qMinimized);
+    if (saved.timerRunning && !saved.answerVisible && timerSeconds > 0) startTimer();
+    syncPlayerView();
 }
 
 function roundMultiplier() { return game ? game.round : 1; }
@@ -1044,6 +1221,7 @@ function startGame() {
         parsePlayers(document.getElementById('setup-players-a').value),
         parsePlayers(document.getElementById('setup-players-b').value));
     pendingCats = new Set();
+    persistGameState();
     showGamePanel('game-board-wrap');
     renderBoard(); renderTeamsBar(); syncPlayerView();
 }
@@ -1120,12 +1298,14 @@ function renderLifelineRow(containerId, teamKey) {
 function nudgeScore(teamKey, delta) {
     if (!game) return;
     game.teams[teamKey].score = Math.max(0, game.teams[teamKey].score + delta);
+    persistGameState();
     renderTeamsBar();
 }
 
 function setTurn(teamKey) {
     if (!game) return;
     game.turn = (game.turn === teamKey) ? null : teamKey;
+    persistGameState();
     renderTeamsBar();
 }
 
@@ -1133,6 +1313,7 @@ function togglePresenting() {
     document.body.classList.toggle('presenting-mode');
     const on = document.body.classList.contains('presenting-mode');
     document.getElementById('present-toggle-btn').innerText = on ? '🖊️ إظهار التحكم' : '🖥️ وضع العرض';
+    persistGameState();
 }
 
 /* ============================================================
@@ -1181,6 +1362,7 @@ function openQuestion(catId, tier, slot) {
     qMinimized = false;
     document.getElementById('restore-q-pill').classList.remove('show');
     document.getElementById('q-overlay').style.display = 'flex';
+    persistGameState();
     syncPlayerView();
 }
 
@@ -1228,6 +1410,7 @@ function useLifeline(teamKey, key) {
     }
     renderQuestionLifelines();
     renderTeamsBar();
+    persistGameState();
 }
 
 function addBanner(text) {
@@ -1245,6 +1428,7 @@ function minimizeQuestion() {
     qMinimized = true;
     document.getElementById('q-overlay').style.display = 'none';
     document.getElementById('restore-q-pill').classList.add('show');
+    persistGameState();
 }
 
 function restoreQuestion() {
@@ -1252,6 +1436,7 @@ function restoreQuestion() {
     qMinimized = false;
     document.getElementById('q-overlay').style.display = 'flex';
     document.getElementById('restore-q-pill').classList.remove('show');
+    persistGameState();
 }
 
 /* ---- تنبيهات خفيفة بدل نوافذ المتصفح ---- */
@@ -1288,10 +1473,12 @@ function showAnswerPhase() {
     pauseTimer();
     document.getElementById('q-phase-1').style.display = 'none';
     document.getElementById('q-phase-2').style.display = 'block';
+    persistGameState();
 }
 function backToQuestionPhase() {
     document.getElementById('q-phase-2').style.display = 'none';
     document.getElementById('q-phase-1').style.display = 'block';
+    persistGameState();
 }
 
 function resolveQuestion(winner) {
@@ -1328,6 +1515,7 @@ function closeQuestionOverlay() {
     qMinimized = false;
     document.getElementById('restore-q-pill').classList.remove('show');
     const f = document.getElementById('buzz-flash'); if (f) f.remove();
+    persistGameState();
     syncPlayerView();
 }
 
@@ -1354,6 +1542,7 @@ function finishRound() {
     document.getElementById('win-title').innerText = title;
     document.getElementById('win-scores').innerHTML = `☕ ${a.name}: <b style="color:var(--brass-bright)">${a.score}</b> نقطة<br>🌴 ${b.name}: <b style="color:var(--brass-bright)">${b.score}</b> نقطة`;
     document.getElementById('win-overlay').style.display = 'flex';
+    persistGameState();
 }
 
 function nextRound() {
@@ -1365,11 +1554,14 @@ function nextRound() {
     // وسائل المساعدة تتجدد كل جولة
     ['a', 'b'].forEach(k => game.teams[k].lifelines = { double: true, time: true, two: true });
     document.getElementById('win-overlay').style.display = 'none';
+    persistGameState();
     renderBoard(); renderTeamsBar();
 }
 
 function fullReset() {
     game = null;
+    current = null;
+    persistGameState();
     document.getElementById('win-overlay').style.display = 'none';
     goto('home-view');
 }
@@ -1381,7 +1573,7 @@ let timerInterval = null;
 let timerSeconds = 60;
 const TIMER_TOTAL = 60;
 
-function resetTimer() { pauseTimer(); timerSeconds = TIMER_TOTAL; renderTimer(); }
+function resetTimer() { pauseTimer(); timerSeconds = TIMER_TOTAL; renderTimer(); persistGameState(); }
 function startTimer() {
     if (timerInterval) return;
     timerInterval = setInterval(() => {
@@ -1390,13 +1582,14 @@ function startTimer() {
         if (timerSeconds <= 0) { pauseTimer(); document.getElementById('timer-label').innerText = '⏰ انتهى الوقت!'; syncPlayerView(); }
     }, 1000);
 }
-function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+function pauseTimer() { clearInterval(timerInterval); timerInterval = null; persistGameState(); }
 function renderTimer() {
     const pct = Math.min(100, Math.max(0, (timerSeconds / TIMER_TOTAL) * 100));
     const fill = document.getElementById('timer-fill');
     fill.style.width = pct + '%';
     fill.style.background = pct > 50 ? 'linear-gradient(90deg, var(--brass), var(--sage))' : pct > 20 ? 'var(--ember)' : 'var(--sadu-red)';
     if (timerSeconds > 0) document.getElementById('timer-label').innerText = `⏱️ ${timerSeconds}`;
+    if (current && timerSeconds % 5 === 0) persistGameState();
     syncPlayerView();
 }
 
@@ -1409,12 +1602,32 @@ function initCanvas() {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
     ctx.strokeStyle = '#1C1310'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-    canvas.onmousedown = (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
-    canvas.onmousemove = (e) => { if (isDrawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
-    canvas.onmouseup = () => isDrawing = false;
-    canvas.addEventListener('touchstart', (e) => { isDrawing = true; ctx.beginPath(); let r = canvas.getBoundingClientRect(); ctx.moveTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); });
-    canvas.addEventListener('touchmove', (e) => { if (!isDrawing) return; let r = canvas.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); ctx.stroke(); });
-    canvas.addEventListener('touchend', () => isDrawing = false);
+    if (canvas.dataset.drawingReady === 'true') return;
+    canvas.dataset.drawingReady = 'true';
+    const point = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rect.left) * (canvas.width / rect.width),
+            y: (event.clientY - rect.top) * (canvas.height / rect.height)
+        };
+    };
+    canvas.addEventListener('pointerdown', (event) => {
+        isDrawing = true;
+        canvas.setPointerCapture?.(event.pointerId);
+        const p = point(event);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+    });
+    canvas.addEventListener('pointermove', (event) => {
+        if (!isDrawing) return;
+        const p = point(event);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    });
+    const stopDrawing = () => { isDrawing = false; };
+    canvas.addEventListener('pointerup', stopDrawing);
+    canvas.addEventListener('pointercancel', stopDrawing);
+    canvas.addEventListener('lostpointercapture', stopDrawing);
 }
 function clearMobileCanvas() { if (!canvas) return; ctx.clearRect(0, 0, canvas.width, canvas.height); }
 function syncCanvasToTV() {
@@ -1740,7 +1953,12 @@ function importLibrary(input) {
 }
 
 /* ============ التهيئة ============ */
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') persistGameState();
+});
+window.addEventListener('pagehide', persistGameState);
 bootMajlis();
 </script>
+<script src="./js/pwa.js" defer></script>
 </body>
 </html>
