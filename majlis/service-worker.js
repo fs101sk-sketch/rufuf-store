@@ -1,10 +1,12 @@
 const CACHE_PREFIX = 'majlis-app-cache-';
-const CACHE_NAME = `${CACHE_PREFIX}v2`;
+const CACHE_NAME = `${CACHE_PREFIX}v3`;
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './js/pwa.js',
+  './js/realtime-client.js',
+  './js/rooms.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png'
