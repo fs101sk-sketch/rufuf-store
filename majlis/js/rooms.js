@@ -518,7 +518,8 @@
       return;
     }
     realtimeRole = role;
-    realtimeClient = new RealtimeClient(`${config.url}/realtime/v1`, {
+    const realtimeUrl = `${config.url.replace(/^http/i, 'ws')}/realtime/v1`;
+    realtimeClient = new RealtimeClient(realtimeUrl, {
       params: { apikey: config.key },
       heartbeatIntervalMs: 25000,
       timeout: 15000
