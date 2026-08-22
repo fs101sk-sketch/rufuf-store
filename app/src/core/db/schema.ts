@@ -1,0 +1,109 @@
+import Dexie, { type EntityTable } from 'dexie'
+
+export interface WorkspaceRow {
+  id: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SettingRow {
+  key: string
+  value: unknown
+  scope: string
+  updated_at: string
+}
+
+export type ActivityAction =
+  | 'project.created'
+  | 'project.updated'
+  | 'project.deleted'
+  | 'project.restored'
+  | 'project.duplicated'
+  | 'task.created'
+  | 'task.updated'
+  | 'task.deleted'
+  | 'task.restored'
+  | 'task.completed'
+  | 'task.reopened'
+  | 'settings.updated'
+  | 'backup.exported'
+  | 'backup.imported'
+
+export interface ActivityLogRow {
+  id: string
+  action: ActivityAction
+  entity_type: 'project' | 'task' | 'settings' | 'backup'
+  entity_id: string
+  actor: string
+  metadata: Record<string, unknown> | null
+  created_at: string
+}
+
+export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled'
+export type Priority = 'low' | 'medium' | 'high' | 'urgent'
+
+export interface ProjectRow {
+  id: string
+  name: string
+  type: string
+  description: string
+  status: ProjectStatus
+  priority: Priority
+  deadline: string | null
+  live_url: string | null
+  repository_url: string | null
+  tech_stack: string[]
+  notes: string
+  favorite: boolean
+  client_id: string | null
+  created_at: string
+  updated_at: string
+  archived_at: string | null
+  deleted_at: string | null
+}
+
+export type TaskStatus = 'todo' | 'in_progress' | 'completed'
+
+export interface TaskRow {
+  id: string
+  project_id: string | null
+  title: string
+  description: string
+  status: TaskStatus
+  priority: Priority
+  due_date: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+/**
+ * Dexie schema. Each `.version(n)` block is a real, additive migration —
+ * once a version ships, its `.stores()` definition must never be edited;
+ * schema changes land as a new `.version(n + 1)` block (with `.upgrade()`
+ * when data needs transforming), so existing local databases upgrade in
+ * place instead of losing data.
+ */
+export class AppDatabase extends Dexie {
+  workspace!: EntityTable<WorkspaceRow, 'id'>
+  settings!: EntityTable<SettingRow, 'key'>
+  activity_log!: EntityTable<ActivityLogRow, 'id'>
+  projects!: EntityTable<ProjectRow, 'id'>
+  tasks!: EntityTable<TaskRow, 'id'>
+
+  constructor(name = 'business_os') {
+    super(name)
+
+    this.version(1).stores({
+      workspace: 'id',
+      settings: 'key, scope',
+      activity_log: 'id, entity_type, entity_id, action, created_at',
+      projects: 'id, status, priority, favorite, deadline, archived_at, deleted_at, created_at, name',
+      tasks: 'id, project_id, status, priority, due_date, deleted_at, created_at',
+    })
+  }
+}
+
+export const db = new AppDatabase()

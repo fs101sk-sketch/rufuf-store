@@ -1,0 +1,88 @@
+# تدقيق الحالة الحالية للمشروع — Current State Audit
+
+تاريخ التدقيق: 2026-08-22
+
+## ملخص تنفيذي (اقرأ هذا أولًا)
+
+المهمة المطلوبة تصف "نظام تشغيل أعمال متكامل" (Modular Business OS) يحتوي على
+Projects / CRM / Finance / AI Workspace / Agents / Workflows، وتفترض وجود
+Prototype سابق باسم **AI Workspace** ونسخة سابقة باسم **Tech Projects Manager**
+يمكن استخراج منطقها وإعادة استخدامه.
+
+بعد فحص كامل للمستودع (`git log`, شجرة الملفات كاملة، بحث نصي عن الكلمات
+المذكورة)، الحقيقة هي:
+
+- **لا يوجد أي أثر** لـ "AI Workspace" أو "Tech Projects Manager" في هذا
+  المستودع، لا في الكود ولا في التاريخ (`git log --oneline` يعرض 16 commit
+  فقط، كلها متعلقة بمتجر "رفوف" ولعبة "المجلس").
+- المستودع الفعلي هو **متجر إلكتروني عربي ثابت** (`index.html` بطول 3179 سطر،
+  HTML/CSS/JS خام بدون أي framework) يبيع لعبة "المجلس"، منشور على GitHub
+  Pages، ومتصل بـ Supabase (Postgres + Auth + Realtime + Edge Functions)
+  لقاعدة البيانات والطلبات والمصادقة.
+- **لا يوجد `package.json` في المستودع إطلاقًا** — لا React، لا TypeScript، لا
+  Tauri، لا Rust، لا SQLite، لا أي build tool. فقط `node` scripts صغيرة
+  (`scripts/*.mjs`) تُستخدم لتوليد ملف seed SQL من كود مضمّن داخل `index.html`.
+- تم التأكيد مع صاحب المشروع (سؤال مباشر) أن هذا هو المستودع الصحيح المطلوب
+  البناء فيه، وأنه لا يوجد Prototype سابق في مكان آخر — أي أن نظام إدارة
+  الأعمال المطلوب **يُبنى من الصفر** داخل هذا المستودع، بالتعايش جنبًا إلى جنب
+  مع متجر "رفوف" الحالي دون المساس به.
+
+هذا يعني أن معظم فقرات المهمة الأصلية الخاصة بـ"الحفاظ على منطق قديم" أو
+"Migration من localStorage لنسخة سابقة" **لا تنطبق هنا** لعدم وجود مادة قديمة
+لتفحصها. القاعدة الذهبية (ممنوع Fake UI) والمعمارية المطلوبة (Core + Modules،
+قاعدة بيانات حقيقية، Local-first، Vertical Slices) ما زالت سارية بالكامل
+وهي الأساس الذي يُبنى عليه.
+
+## جرد الملفات الفعلية
+
+| المسار | الوصف | الحالة |
+|---|---|---|
+| `index.html` | متجر "رفوف" الكامل (HTML/CSS/JS خام، RTL، متصل بـ Supabase) | **Working** — منشور فعليًا وله بيانات حقيقية عبر Supabase |
+| `majlis/` | تطبيق PWA للعبة "المجلس" (غرف لحظية عبر Supabase Realtime) | **Working** |
+| `supabase/*.sql` | Schema فعلي لقاعدة بيانات Postgres (RLS، جداول الطلبات، غرف المجلس) | **Working** — يُستخدم فعليًا من الموقع المنشور |
+| `scripts/*.mjs` | أدوات Node لمزامنة الـ schema وتوليد seed | **Working** كأدوات تطوير محلية |
+| `.nojekyll`, `README.md` | إعداد GitHub Pages وتوثيق | **Working** |
+
+لا توجد أي وحدات Projects / CRM / Finance / AI / Agents / Workflows / Calendar
+/ Files / Memory / Prompt Library / Usage / Activity Log بأي شكل — لا كواجهة
+ولا كمنطق. أي "بحث عن mock/placeholder/TODO/FIXME/demo" داخل الكود الحالي
+غير ذي صلة لأن المجال مختلف تمامًا (متجر إلكتروني وليس نظام إدارة أعمال).
+
+## قرار التقنية (Stack Decision)
+
+بما أن المستودع الحالي لا يحتوي على أي بنية برمجية (build tooling) صالحة
+للتوسّع إلى نظام بهذا الحجم (12+ وحدة، قاعدة بيانات علائقية، اختبارات،
+Type safety)، وبما أن إبقاء متجر "رفوف" كما هو (HTML خام بدون build step)
+أمر مطلوب صراحة (لا تهديم لما يعمل)، القرار هو:
+
+- **نظام إدارة الأعمال الجديد يُبنى في مجلد منفصل: `app/`**، بحيث لا يتقاطع مع
+  جذر المستودع (`index.html`, `majlis/`) الذي يبقى كما هو وينشر كما هو عبر
+  GitHub Pages.
+- **Stack**: Vite + React + TypeScript (strict mode) — أقرب Stack لما ذكرته
+  التعليمات كاحتمال (React/TypeScript) وهو الأنسب لحجم المشروع، مع توفر
+  Node 22 و npm 10 في البيئة.
+- **قاعدة البيانات**: التطبيق يعمل كتطبيق ويب (لا يوجد Tauri/Rust في المشروع
+  ولا طلب صريح لبناء تطبيق سطح مكتب)، لذلك SQLite عبر Tauri غير منطقي هنا.
+  البديل الحقيقي المطابق لفلسفة "Local-first" و"بيانات تبقى بعد إغلاق
+  المتصفح/إعادة التشغيل" في متصفح هو **IndexedDB عبر Dexie.js**، مع طبقة
+  Repository/Service حقيقية فوقها (وليس localStorage وليس JSON blob واحد) —
+  جداول منفصلة (`projects`, `tasks`, `settings`, `activity_log`, …) وindexes
+  ومخطط Versioned migrations عبر `db.version(n).stores(...)`.
+  هذا القرار موثّق هنا؛ إذا رغب المستخدم لاحقًا بربط Supabase (الموجود أصلًا
+  في المشروع) كمزامنة اختيارية سحابية، يمكن إضافته كطبقة sync فوق الـ
+  repository دون تغيير الواجهة.
+- **الاختبارات**: Vitest (يتكامل طبيعيًا مع Vite/TS).
+
+## تصنيف الوحدات (بعد تنفيذ هذه الجلسة)
+
+| الوحدة | الحالة | Persistence | ملاحظات |
+|---|---|---|---|
+| Foundation (DB, Settings, Activity Log, Backup, Shared UI, Sidebar, Theme) | **Working** | IndexedDB (Dexie) | migrations إصدار 1، بدون بيانات وهمية |
+| Projects (CRUD، تكرار، حذف ناعم + تراجع، مفضّلة، بحث/فلاتر/فرز، إحصائيات حقيقية) | **Working** | IndexedDB (Dexie) | مغطاة باختبارات + تحقق يدوي في المتصفح |
+| Tasks (CRUD، إكمال/إعادة فتح، حذف ناعم + تراجع، تقدّم محسوب) | **Working** | IndexedDB (Dexie) | التقدّم يُحسب من المهام الفعلية وليس رقمًا مخزَّنًا |
+| Settings page (المظهر، تصدير/استيراد نسخة احتياطية) | **Working** | IndexedDB (Dexie) | الاستيراد يتحقق من صحة الملف ويعرض ملخصًا قبل التنفيذ |
+| CRM, Finance, Calendar, Files, AI Chat, Memory, Agents, Workflows, Prompt Library, Usage | **غير موجود** | — | لا تظهر كصفحات أو أزرار؛ فقط نص غير تفاعلي تحت "قريبًا" |
+
+تفاصيل ما تم بناؤه بالضبط، الاختبارات ونتائجها، والخطوة التالية المقترحة
+موثّقة في رسالة تقرير نهاية الجلسة (وفي رسائل commit على فرع
+`claude/modular-business-os-antxcx`).
