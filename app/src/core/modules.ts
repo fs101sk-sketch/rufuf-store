@@ -14,8 +14,8 @@ export interface ModuleDefinition {
 export const MODULES: ModuleDefinition[] = [
   { id: 'projects', label: 'المشاريع', path: '/projects', implemented: true },
   { id: 'crm', label: 'العملاء (CRM)', path: '/crm', implemented: true },
-  { id: 'calendar', label: 'التقويم', path: '', implemented: false },
-  { id: 'finance', label: 'المالية', path: '', implemented: false },
+  { id: 'calendar', label: 'التقويم', path: '/calendar', implemented: true },
+  { id: 'finance', label: 'المالية', path: '/finance', implemented: true },
   { id: 'files', label: 'الملفات', path: '', implemented: false },
   { id: 'ai-chat', label: 'الذكاء الاصطناعي', path: '', implemented: false },
   { id: 'agents', label: 'الوكلاء', path: '', implemented: false },

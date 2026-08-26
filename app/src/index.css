@@ -693,6 +693,84 @@ textarea {
   color: var(--danger);
 }
 
+.badge-tx-income {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.badge-tx-expense {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.amount-positive {
+  color: var(--ok);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-negative {
+  color: var(--danger);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value.negative {
+  color: var(--danger);
+}
+
+/* ---------- finance: monthly breakdown ---------- */
+
+.monthly-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monthly-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 100px;
+  align-items: center;
+  gap: 10px;
+}
+
+.monthly-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.monthly-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.monthly-bar {
+  height: 7px;
+  border-radius: 999px;
+  min-width: 2px;
+  transition: width 0.2s;
+}
+
+.monthly-bar-income {
+  background: var(--ok);
+}
+
+.monthly-bar-expense {
+  background: var(--danger);
+}
+
+.monthly-net {
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.monthly-net.negative {
+  color: var(--danger);
+}
+
 /* ---------- trash panel ---------- */
 
 .trash-panel {
@@ -995,6 +1073,124 @@ textarea {
   color: var(--muted);
   white-space: nowrap;
   font-size: 12px;
+}
+
+/* ---------- calendar ---------- */
+
+.checkbox-label {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+}
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendar-main {
+  overflow-x: auto;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.calendar-nav h3 {
+  margin: 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(90px, 1fr));
+  gap: 4px;
+}
+
+.calendar-weekdays {
+  margin-bottom: 4px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.calendar-day {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  min-height: 76px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  cursor: pointer;
+  text-align: right;
+}
+
+.calendar-day:hover {
+  border-color: var(--accent);
+}
+
+.calendar-day.outside {
+  opacity: 0.4;
+}
+
+.calendar-day.today .calendar-day-number {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 6px;
+}
+
+.calendar-day.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.calendar-day-number {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.calendar-day-event {
+  font-size: 10.5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 1px 4px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-day-more {
+  font-size: 10px;
+  color: var(--muted);
 }
 
 /* ---------- pipeline (deals kanban) ---------- */

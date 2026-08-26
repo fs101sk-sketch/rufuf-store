@@ -35,6 +35,14 @@ export type ActivityAction =
   | 'deal.deleted'
   | 'deal.restored'
   | 'deal.stage_changed'
+  | 'transaction.created'
+  | 'transaction.updated'
+  | 'transaction.deleted'
+  | 'transaction.restored'
+  | 'event.created'
+  | 'event.updated'
+  | 'event.deleted'
+  | 'event.restored'
   | 'settings.updated'
   | 'backup.exported'
   | 'backup.imported'
@@ -42,7 +50,7 @@ export type ActivityAction =
 export interface ActivityLogRow {
   id: string
   action: ActivityAction
-  entity_type: 'project' | 'task' | 'contact' | 'deal' | 'settings' | 'backup'
+  entity_type: 'project' | 'task' | 'contact' | 'deal' | 'transaction' | 'event' | 'settings' | 'backup'
   entity_id: string
   actor: string
   metadata: Record<string, unknown> | null
@@ -120,6 +128,37 @@ export interface DealRow {
   deleted_at: string | null
 }
 
+export type TransactionType = 'income' | 'expense'
+
+export interface TransactionRow {
+  id: string
+  type: TransactionType
+  amount: number
+  category: string
+  description: string
+  date: string
+  project_id: string | null
+  contact_id: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export interface EventRow {
+  id: string
+  title: string
+  description: string
+  start_at: string
+  end_at: string | null
+  all_day: boolean
+  location: string
+  project_id: string | null
+  contact_id: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
 /**
  * Dexie schema. Each `.version(n)` block is a real, additive migration —
  * once a version ships, its `.stores()` definition must never be edited;
@@ -135,6 +174,8 @@ export class AppDatabase extends Dexie {
   tasks!: EntityTable<TaskRow, 'id'>
   contacts!: EntityTable<ContactRow, 'id'>
   deals!: EntityTable<DealRow, 'id'>
+  transactions!: EntityTable<TransactionRow, 'id'>
+  events!: EntityTable<EventRow, 'id'>
 
   constructor(name = 'business_os') {
     super(name)
@@ -150,6 +191,11 @@ export class AppDatabase extends Dexie {
     this.version(2).stores({
       contacts: 'id, type, favorite, deleted_at, created_at, name',
       deals: 'id, contact_id, stage, expected_close_date, deleted_at, created_at',
+    })
+
+    this.version(3).stores({
+      transactions: 'id, type, category, date, project_id, contact_id, deleted_at, created_at',
+      events: 'id, start_at, end_at, deleted_at, created_at',
     })
   }
 }

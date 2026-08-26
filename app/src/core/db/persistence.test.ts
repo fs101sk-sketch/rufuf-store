@@ -39,7 +39,7 @@ describe('database persistence across "restarts"', () => {
   it('is versioned with the expected tables across all migrations', () => {
     const database = new AppDatabase(`version_test_${crypto.randomUUID()}`)
     expect(database.tables.map((t) => t.name).sort()).toEqual(
-      ['activity_log', 'contacts', 'deals', 'projects', 'settings', 'tasks', 'workspace'].sort(),
+      ['activity_log', 'contacts', 'deals', 'events', 'projects', 'settings', 'tasks', 'transactions', 'workspace'].sort(),
     )
     database.close()
   })

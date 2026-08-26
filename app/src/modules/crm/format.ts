@@ -1,3 +1,1 @@
-export function formatCurrency(value: number): string {
-  return `${value.toLocaleString('ar')} ر.س`
-}
+export { formatCurrency } from '../../core/format'

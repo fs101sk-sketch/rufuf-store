@@ -1,11 +1,20 @@
 import { db } from '../db/schema'
-import type { ContactRow, DealRow, ProjectRow, SettingRow, TaskRow, WorkspaceRow } from '../db/schema'
+import type {
+  ContactRow,
+  DealRow,
+  EventRow,
+  ProjectRow,
+  SettingRow,
+  TaskRow,
+  TransactionRow,
+  WorkspaceRow,
+} from '../db/schema'
 import { logActivity } from '../activity/activityService'
 import { createId } from '../ids'
 import { nowIso } from '../dates'
 
 const APP_NAME = 'business-os'
-const BACKUP_VERSION = 2
+const BACKUP_VERSION = 3
 
 export interface BackupFile {
   app: string
@@ -17,16 +26,20 @@ export interface BackupFile {
   tasks: TaskRow[]
   contacts: ContactRow[]
   deals: DealRow[]
+  transactions: TransactionRow[]
+  events: EventRow[]
 }
 
 export async function buildBackup(): Promise<BackupFile> {
-  const [workspace, settings, projects, tasks, contacts, deals] = await Promise.all([
+  const [workspace, settings, projects, tasks, contacts, deals, transactions, events] = await Promise.all([
     db.workspace.toArray(),
     db.settings.toArray(),
     db.projects.toArray(),
     db.tasks.toArray(),
     db.contacts.toArray(),
     db.deals.toArray(),
+    db.transactions.toArray(),
+    db.events.toArray(),
   ])
   return {
     app: APP_NAME,
@@ -38,6 +51,8 @@ export async function buildBackup(): Promise<BackupFile> {
     tasks,
     contacts,
     deals,
+    transactions,
+    events,
   }
 }
 
@@ -48,6 +63,8 @@ export async function exportBackup(): Promise<BackupFile> {
     tasks: backup.tasks.length,
     contacts: backup.contacts.length,
     deals: backup.deals.length,
+    transactions: backup.transactions.length,
+    events: backup.events.length,
   })
   return backup
 }
@@ -61,6 +78,8 @@ export interface BackupSummary {
   tasks: number
   contacts: number
   deals: number
+  transactions: number
+  events: number
   settings: number
   exportedAt: string
 }
@@ -91,6 +110,9 @@ export function parseBackup(raw: unknown): { data: BackupFile; summary: BackupSu
     // Backups created before the CRM module (version 1) predate these tables.
     contacts: Array.isArray(candidate.contacts) ? candidate.contacts : [],
     deals: Array.isArray(candidate.deals) ? candidate.deals : [],
+    // Backups created before the Finance/Calendar modules (version 2) predate these tables.
+    transactions: Array.isArray(candidate.transactions) ? candidate.transactions : [],
+    events: Array.isArray(candidate.events) ? candidate.events : [],
   }
   return {
     data,
@@ -99,6 +121,8 @@ export function parseBackup(raw: unknown): { data: BackupFile; summary: BackupSu
       tasks: data.tasks.length,
       contacts: data.contacts.length,
       deals: data.deals.length,
+      transactions: data.transactions.length,
+      events: data.events.length,
       settings: data.settings.length,
       exportedAt: data.exportedAt,
     },
@@ -109,7 +133,7 @@ export function parseBackup(raw: unknown): { data: BackupFile; summary: BackupSu
 export async function importBackup(data: BackupFile): Promise<BackupSummary> {
   await db.transaction(
     'rw',
-    [db.workspace, db.settings, db.projects, db.tasks, db.contacts, db.deals],
+    [db.workspace, db.settings, db.projects, db.tasks, db.contacts, db.deals, db.transactions, db.events],
     async () => {
       for (const w of data.workspace) await db.workspace.put(w)
       for (const s of data.settings) await db.settings.put(s)
@@ -117,6 +141,8 @@ export async function importBackup(data: BackupFile): Promise<BackupSummary> {
       for (const t of data.tasks) await db.tasks.put(t)
       for (const c of data.contacts) await db.contacts.put(c)
       for (const d of data.deals) await db.deals.put(d)
+      for (const tx of data.transactions) await db.transactions.put(tx)
+      for (const e of data.events) await db.events.put(e)
     },
   )
   const summary: BackupSummary = {
@@ -124,6 +150,8 @@ export async function importBackup(data: BackupFile): Promise<BackupSummary> {
     tasks: data.tasks.length,
     contacts: data.contacts.length,
     deals: data.deals.length,
+    transactions: data.transactions.length,
+    events: data.events.length,
     settings: data.settings.length,
     exportedAt: data.exportedAt,
   }
