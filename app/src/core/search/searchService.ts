@@ -1,6 +1,6 @@
-import type { ContactRow, DealRow, EventRow, ProjectRow, TaskRow, TransactionRow } from '../db/schema'
+import type { ContactRow, DealRow, EventRow, FileRow, ProjectRow, TaskRow, TransactionRow } from '../db/schema'
 
-export type SearchResultType = 'project' | 'task' | 'contact' | 'deal' | 'transaction' | 'event'
+export type SearchResultType = 'project' | 'task' | 'contact' | 'deal' | 'transaction' | 'event' | 'file'
 
 export interface SearchResult {
   id: string
@@ -17,6 +17,7 @@ export const SEARCH_TYPE_LABELS: Record<SearchResultType, string> = {
   deal: 'صفقة',
   transaction: 'حركة مالية',
   event: 'حدث',
+  file: 'ملف',
 }
 
 export interface SearchIndexInput {
@@ -26,6 +27,7 @@ export interface SearchIndexInput {
   deals: DealRow[]
   transactions: TransactionRow[]
   events: EventRow[]
+  files: FileRow[]
 }
 
 /** Builds a flat, real, in-memory search index from live data (no fake entries). */
@@ -83,6 +85,11 @@ export function buildSearchIndex(input: SearchIndexInput): SearchResult[] {
   for (const e of input.events) {
     if (e.deleted_at) continue
     results.push({ id: e.id, type: 'event', title: e.title, subtitle: e.location || 'حدث', path: '/calendar' })
+  }
+
+  for (const f of input.files) {
+    if (f.deleted_at) continue
+    results.push({ id: f.id, type: 'file', title: f.name, subtitle: f.description || 'ملف', path: '/files' })
   }
 
   return results

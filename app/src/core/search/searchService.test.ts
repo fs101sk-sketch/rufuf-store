@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ContactRow, DealRow, EventRow, ProjectRow, TaskRow, TransactionRow } from '../db/schema'
+import type { ContactRow, DealRow, EventRow, FileRow, ProjectRow, TaskRow, TransactionRow } from '../db/schema'
 import { buildSearchIndex, searchAll } from './searchService'
 
 function makeProject(overrides: Partial<ProjectRow> = {}): ProjectRow {
@@ -117,6 +117,24 @@ function makeEvent(overrides: Partial<EventRow> = {}): EventRow {
   }
 }
 
+function makeFile(overrides: Partial<FileRow> = {}): FileRow {
+  const now = new Date().toISOString()
+  return {
+    id: crypto.randomUUID(),
+    name: 'ملف.pdf',
+    mime_type: 'application/pdf',
+    size: 1024,
+    description: '',
+    project_id: null,
+    contact_id: null,
+    data: new Blob(['x']),
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+    ...overrides,
+  }
+}
+
 describe('buildSearchIndex', () => {
   it('excludes soft-deleted rows from every entity type', () => {
     const project = makeProject({ deleted_at: new Date().toISOString() })
@@ -127,6 +145,7 @@ describe('buildSearchIndex', () => {
       deals: [],
       transactions: [],
       events: [],
+      files: [],
     })
     expect(index).toHaveLength(0)
   })
@@ -141,6 +160,7 @@ describe('buildSearchIndex', () => {
       deals: [],
       transactions: [],
       events: [],
+      files: [],
     })
     const taskResult = index.find((r) => r.type === 'task')
     expect(taskResult?.subtitle).toBe('موقع تجريبي')
@@ -157,6 +177,7 @@ describe('buildSearchIndex', () => {
       deals: [deal],
       transactions: [],
       events: [],
+      files: [],
     })
     const dealResult = index.find((r) => r.type === 'deal')
     expect(dealResult?.subtitle).toBe('أحمد')
@@ -173,9 +194,28 @@ describe('buildSearchIndex', () => {
       deals: [],
       transactions: [tx],
       events: [event],
+      files: [],
     })
     expect(index.find((r) => r.type === 'transaction')?.title).toBe('استشارات')
     expect(index.find((r) => r.type === 'event')?.subtitle).toBe('المكتب')
+  })
+
+  it('includes files with their real name and description, excluding deleted ones', () => {
+    const file = makeFile({ name: 'عقد.pdf', description: 'عقد موقّع' })
+    const deletedFile = makeFile({ name: 'محذوف.pdf', deleted_at: new Date().toISOString() })
+    const index = buildSearchIndex({
+      projects: [],
+      tasks: [],
+      contacts: [],
+      deals: [],
+      transactions: [],
+      events: [],
+      files: [file, deletedFile],
+    })
+    expect(index).toHaveLength(1)
+    expect(index[0]?.title).toBe('عقد.pdf')
+    expect(index[0]?.subtitle).toBe('عقد موقّع')
+    expect(index[0]?.path).toBe('/files')
   })
 })
 
@@ -187,6 +227,7 @@ describe('searchAll', () => {
     deals: [],
     transactions: [],
     events: [],
+    files: [],
   })
 
   it('returns nothing for an empty query', () => {
@@ -207,6 +248,7 @@ describe('searchAll', () => {
       deals: [],
       transactions: [],
       events: [],
+      files: [],
     })
     expect(searchAll(bigIndex, 'مطابق', 10)).toHaveLength(10)
   })

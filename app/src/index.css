@@ -1214,6 +1214,10 @@ textarea {
   background: var(--warn-soft);
   color: var(--warn);
 }
+.search-palette-type-file {
+  background: var(--line-2);
+  color: var(--ink-2);
+}
 
 /* ---------- calendar ---------- */
 

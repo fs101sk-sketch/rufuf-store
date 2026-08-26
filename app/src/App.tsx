@@ -14,6 +14,7 @@ import { ContactDetailPage } from './modules/crm/ContactDetailPage'
 import { DealsPipelinePage } from './modules/crm/DealsPipelinePage'
 import { FinancePage } from './modules/finance/FinancePage'
 import { CalendarPage } from './modules/calendar/CalendarPage'
+import { FilesPage } from './modules/files/FilesPage'
 import { SettingsPage } from './modules/settings/SettingsPage'
 import { useTheme } from './core/settings/useTheme'
 
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path="/crm/contacts/:id" element={<ContactDetailPage />} />
         <Route path="/finance" element={<FinancePage />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/files" element={<FilesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route
           path="*"

@@ -43,6 +43,10 @@ export type ActivityAction =
   | 'event.updated'
   | 'event.deleted'
   | 'event.restored'
+  | 'file.created'
+  | 'file.updated'
+  | 'file.deleted'
+  | 'file.restored'
   | 'settings.updated'
   | 'backup.exported'
   | 'backup.imported'
@@ -50,7 +54,7 @@ export type ActivityAction =
 export interface ActivityLogRow {
   id: string
   action: ActivityAction
-  entity_type: 'project' | 'task' | 'contact' | 'deal' | 'transaction' | 'event' | 'settings' | 'backup'
+  entity_type: 'project' | 'task' | 'contact' | 'deal' | 'transaction' | 'event' | 'file' | 'settings' | 'backup'
   entity_id: string
   actor: string
   metadata: Record<string, unknown> | null
@@ -159,6 +163,20 @@ export interface EventRow {
   deleted_at: string | null
 }
 
+export interface FileRow {
+  id: string
+  name: string
+  mime_type: string
+  size: number
+  description: string
+  project_id: string | null
+  contact_id: string | null
+  data: Blob
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
 /**
  * Dexie schema. Each `.version(n)` block is a real, additive migration —
  * once a version ships, its `.stores()` definition must never be edited;
@@ -176,6 +194,7 @@ export class AppDatabase extends Dexie {
   deals!: EntityTable<DealRow, 'id'>
   transactions!: EntityTable<TransactionRow, 'id'>
   events!: EntityTable<EventRow, 'id'>
+  files!: EntityTable<FileRow, 'id'>
 
   constructor(name = 'business_os') {
     super(name)
@@ -196,6 +215,10 @@ export class AppDatabase extends Dexie {
     this.version(3).stores({
       transactions: 'id, type, category, date, project_id, contact_id, deleted_at, created_at',
       events: 'id, start_at, end_at, deleted_at, created_at',
+    })
+
+    this.version(4).stores({
+      files: 'id, project_id, contact_id, deleted_at, created_at, name',
     })
   }
 }

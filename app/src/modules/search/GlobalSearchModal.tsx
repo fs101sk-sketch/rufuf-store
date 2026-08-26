@@ -4,6 +4,7 @@ import { useProjects, useAllTasks } from '../projects/hooks'
 import { useContacts, useAllDeals } from '../crm/hooks'
 import { useTransactions } from '../finance/hooks'
 import { useEvents } from '../calendar/hooks'
+import { useFiles } from '../files/hooks'
 import { buildSearchIndex, searchAll, SEARCH_TYPE_LABELS } from '../../core/search/searchService'
 
 export function GlobalSearchModal({ onClose }: { onClose: () => void }) {
@@ -17,6 +18,7 @@ export function GlobalSearchModal({ onClose }: { onClose: () => void }) {
   const deals = useAllDeals()
   const transactions = useTransactions()
   const events = useEvents()
+  const files = useFiles()
 
   const index = useMemo(
     () =>
@@ -27,8 +29,9 @@ export function GlobalSearchModal({ onClose }: { onClose: () => void }) {
         deals: deals ?? [],
         transactions: transactions ?? [],
         events: events ?? [],
+        files: files ?? [],
       }),
-    [projects, tasks, contacts, deals, transactions, events],
+    [projects, tasks, contacts, deals, transactions, events, files],
   )
 
   const results = useMemo(() => searchAll(index, query), [index, query])
@@ -56,7 +59,7 @@ export function GlobalSearchModal({ onClose }: { onClose: () => void }) {
         <input
           ref={inputRef}
           className="search-palette-input"
-          placeholder="ابحث في المشاريع، المهام، العملاء، الصفقات، الحركات المالية، الأحداث…"
+          placeholder="ابحث في المشاريع، المهام، العملاء، الصفقات، الحركات المالية، الأحداث، الملفات…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
