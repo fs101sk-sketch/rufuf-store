@@ -60,13 +60,13 @@ export function SettingsPage() {
 
     const ok = await confirmAction({
       title: 'استيراد نسخة احتياطية',
-      description: `سيتم استيراد ${parsed.summary.projects} مشروع و${parsed.summary.tasks} مهمة (تصدير بتاريخ ${new Date(parsed.summary.exportedAt).toLocaleDateString('ar')}). البيانات ذات المعرّفات المطابقة سيتم استبدالها، والبقية ستُضاف. هل تريد المتابعة؟`,
+      description: `سيتم استيراد ${parsed.summary.projects} مشروع و${parsed.summary.tasks} مهمة و${parsed.summary.contacts} جهة اتصال و${parsed.summary.deals} صفقة (تصدير بتاريخ ${new Date(parsed.summary.exportedAt).toLocaleDateString('ar')}). البيانات ذات المعرّفات المطابقة سيتم استبدالها، والبقية ستُضاف. هل تريد المتابعة؟`,
       confirmLabel: 'استيراد',
     })
     if (!ok) return
 
     const summary = await importBackup(parsed.data)
-    pushToast({ message: `تم استيراد ${summary.projects} مشروع و${summary.tasks} مهمة.` })
+    pushToast({ message: `تم استيراد ${summary.projects} مشروع و${summary.tasks} مهمة و${summary.contacts} جهة اتصال و${summary.deals} صفقة.` })
   }
 
   return (
@@ -97,7 +97,7 @@ export function SettingsPage() {
 
       <div className="detail-card">
         <h3>النسخ الاحتياطي</h3>
-        <p>تصدير جميع بياناتك (المشاريع والمهام والإعدادات) إلى ملف JSON، أو استيراد نسخة سابقة.</p>
+        <p>تصدير جميع بياناتك (المشاريع والمهام والعملاء والصفقات والإعدادات) إلى ملف JSON، أو استيراد نسخة سابقة.</p>
         <div className="backup-actions">
           <button type="button" className="btn btn-primary" onClick={handleExport} disabled={exporting}>
             {exporting ? 'جارٍ التصدير…' : 'تصدير نسخة احتياطية'}

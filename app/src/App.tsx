@@ -8,6 +8,9 @@ import { ConfirmDialogHost } from './core/ui/ConfirmDialogHost'
 import { LoadingState, ErrorState } from './core/ui/States'
 import { ProjectsPage } from './modules/projects/ProjectsPage'
 import { ProjectDetailPage } from './modules/projects/ProjectDetailPage'
+import { ContactsPage } from './modules/crm/ContactsPage'
+import { ContactDetailPage } from './modules/crm/ContactDetailPage'
+import { DealsPipelinePage } from './modules/crm/DealsPipelinePage'
 import { SettingsPage } from './modules/settings/SettingsPage'
 import { useTheme } from './core/settings/useTheme'
 
@@ -18,6 +21,9 @@ function AppRoutes() {
         <Route index element={<Navigate to="/projects" replace />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
+        <Route path="/crm" element={<ContactsPage />} />
+        <Route path="/crm/pipeline" element={<DealsPipelinePage />} />
+        <Route path="/crm/contacts/:id" element={<ContactDetailPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route
           path="*"

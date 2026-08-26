@@ -26,6 +26,15 @@ export type ActivityAction =
   | 'task.restored'
   | 'task.completed'
   | 'task.reopened'
+  | 'contact.created'
+  | 'contact.updated'
+  | 'contact.deleted'
+  | 'contact.restored'
+  | 'deal.created'
+  | 'deal.updated'
+  | 'deal.deleted'
+  | 'deal.restored'
+  | 'deal.stage_changed'
   | 'settings.updated'
   | 'backup.exported'
   | 'backup.imported'
@@ -33,7 +42,7 @@ export type ActivityAction =
 export interface ActivityLogRow {
   id: string
   action: ActivityAction
-  entity_type: 'project' | 'task' | 'settings' | 'backup'
+  entity_type: 'project' | 'task' | 'contact' | 'deal' | 'settings' | 'backup'
   entity_id: string
   actor: string
   metadata: Record<string, unknown> | null
@@ -79,6 +88,38 @@ export interface TaskRow {
   deleted_at: string | null
 }
 
+export type ContactType = 'lead' | 'customer'
+
+export interface ContactRow {
+  id: string
+  name: string
+  company: string
+  email: string
+  phone: string
+  type: ContactType
+  notes: string
+  favorite: boolean
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export type DealStage = 'new' | 'contacted' | 'proposal' | 'negotiation' | 'won' | 'lost'
+
+export interface DealRow {
+  id: string
+  contact_id: string
+  title: string
+  value: number
+  stage: DealStage
+  expected_close_date: string | null
+  notes: string
+  created_at: string
+  updated_at: string
+  closed_at: string | null
+  deleted_at: string | null
+}
+
 /**
  * Dexie schema. Each `.version(n)` block is a real, additive migration —
  * once a version ships, its `.stores()` definition must never be edited;
@@ -92,6 +133,8 @@ export class AppDatabase extends Dexie {
   activity_log!: EntityTable<ActivityLogRow, 'id'>
   projects!: EntityTable<ProjectRow, 'id'>
   tasks!: EntityTable<TaskRow, 'id'>
+  contacts!: EntityTable<ContactRow, 'id'>
+  deals!: EntityTable<DealRow, 'id'>
 
   constructor(name = 'business_os') {
     super(name)
@@ -102,6 +145,11 @@ export class AppDatabase extends Dexie {
       activity_log: 'id, entity_type, entity_id, action, created_at',
       projects: 'id, status, priority, favorite, deadline, archived_at, deleted_at, created_at, name',
       tasks: 'id, project_id, status, priority, due_date, deleted_at, created_at',
+    })
+
+    this.version(2).stores({
+      contacts: 'id, type, favorite, deleted_at, created_at, name',
+      deals: 'id, contact_id, stage, expected_close_date, deleted_at, created_at',
     })
   }
 }

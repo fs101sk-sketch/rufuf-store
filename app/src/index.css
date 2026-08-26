@@ -248,6 +248,12 @@ textarea {
   color: var(--muted);
 }
 
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* ---------- states ---------- */
 
 .state {
@@ -653,6 +659,40 @@ textarea {
   color: var(--muted);
 }
 
+.badge-contact-customer {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.badge-contact-lead {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-stage-new {
+  background: var(--line-2);
+  color: var(--ink-2);
+}
+.badge-stage-contacted {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge-stage-proposal {
+  background: var(--gold-soft);
+  color: var(--warn);
+}
+.badge-stage-negotiation {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.badge-stage-won {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.badge-stage-lost {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
 /* ---------- trash panel ---------- */
 
 .trash-panel {
@@ -955,6 +995,107 @@ textarea {
   color: var(--muted);
   white-space: nowrap;
   font-size: 12px;
+}
+
+/* ---------- pipeline (deals kanban) ---------- */
+
+.pipeline-page {
+  max-width: none;
+}
+
+.pipeline-board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(220px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+}
+
+@media (max-width: 1100px) {
+  .pipeline-board {
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pipeline-board {
+    grid-template-columns: minmax(220px, 1fr);
+  }
+}
+
+.pipeline-column {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.pipeline-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.pipeline-column-total {
+  font-size: 12px;
+}
+
+.pipeline-column-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pipeline-empty {
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.pipeline-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pipeline-card-title {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.pipeline-card-contact {
+  font-size: 12.5px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.pipeline-card-contact:hover {
+  text-decoration: underline;
+}
+
+.pipeline-card-value {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pipeline-card-stage-select {
+  margin-top: 4px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12.5px;
 }
 
 /* ---------- settings ---------- */

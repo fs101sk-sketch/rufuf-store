@@ -77,12 +77,14 @@ Type safety)، وبما أن إبقاء متجر "رفوف" كما هو (HTML خ
 
 | الوحدة | الحالة | Persistence | ملاحظات |
 |---|---|---|---|
-| Foundation (DB, Settings, Activity Log, Backup, Shared UI, Sidebar, Theme) | **Working** | IndexedDB (Dexie) | migrations إصدار 1، بدون بيانات وهمية |
+| Foundation (DB, Settings, Activity Log, Backup, Shared UI, Sidebar, Theme) | **Working** | IndexedDB (Dexie) | migrations (v1 أساس + v2 لجداول CRM)، بدون بيانات وهمية |
 | Projects (CRUD، تكرار، حذف ناعم + تراجع، مفضّلة، بحث/فلاتر/فرز، إحصائيات حقيقية) | **Working** | IndexedDB (Dexie) | مغطاة باختبارات + تحقق يدوي في المتصفح |
 | Tasks (CRUD، إكمال/إعادة فتح، حذف ناعم + تراجع، تقدّم محسوب) | **Working** | IndexedDB (Dexie) | التقدّم يُحسب من المهام الفعلية وليس رقمًا مخزَّنًا |
-| Settings page (المظهر، تصدير/استيراد نسخة احتياطية) | **Working** | IndexedDB (Dexie) | الاستيراد يتحقق من صحة الملف ويعرض ملخصًا قبل التنفيذ |
-| CRM, Finance, Calendar, Files, AI Chat, Memory, Agents, Workflows, Prompt Library, Usage | **غير موجود** | — | لا تظهر كصفحات أو أزرار؛ فقط نص غير تفاعلي تحت "قريبًا" |
+| CRM — Contacts (CRUD، حذف ناعم + تراجع/حذف نهائي متسلسل للصفقات، مفضّلة، بحث/فلاتر/فرز) | **Working** | IndexedDB (Dexie، v2) | مغطاة باختبارات + تحقق يدوي في المتصفح |
+| CRM — Deals (CRUD، لوحة صفقات Kanban بالمراحل، تغيير المرحلة، `closed_at` محسوب فعليًا) | **Working** | IndexedDB (Dexie، v2) | إحصائيات (قيمة خط الأنابيب، صفقات مربوحة) محسوبة من البيانات الفعلية |
+| Settings page (المظهر، تصدير/استيراد نسخة احتياطية) | **Working** | IndexedDB (Dexie) | النسخة الاحتياطية تشمل الآن جهات الاتصال والصفقات؛ الاستيراد يتحقق من صحة الملف ويعرض ملخصًا قبل التنفيذ |
+| Finance, Calendar, Files, AI Chat, Memory, Agents, Workflows, Prompt Library, Usage | **غير موجود** | — | لا تظهر كصفحات أو أزرار؛ فقط نص غير تفاعلي تحت "قريبًا" |
 
 تفاصيل ما تم بناؤه بالضبط، الاختبارات ونتائجها، والخطوة التالية المقترحة
-موثّقة في رسالة تقرير نهاية الجلسة (وفي رسائل commit على فرع
-`claude/modular-business-os-antxcx`).
+موثّقة في رسائل commit على فرع `claude/modular-business-os-antxcx` وفي
+PR #1.
