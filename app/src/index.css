@@ -165,6 +165,33 @@ textarea {
   padding: 0 10px;
 }
 
+.sidebar-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.sidebar-search-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sidebar-search-btn kbd {
+  font-family: inherit;
+  font-size: 11px;
+  background: var(--line-2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -323,6 +350,8 @@ textarea {
   flex-direction: column;
   gap: 2px;
   text-align: right;
+  color: inherit;
+  text-decoration: none;
 }
 
 .stat-card-clickable {
@@ -1075,6 +1104,117 @@ textarea {
   font-size: 12px;
 }
 
+/* ---------- global search palette ---------- */
+
+.search-palette {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  margin-top: 8vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+
+.search-palette-input {
+  padding: 16px 18px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.search-palette-input:focus {
+  outline: none;
+}
+
+.search-palette-results {
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.search-palette-hint {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 16px 10px;
+  margin: 0;
+  text-align: center;
+}
+
+.search-palette-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-palette-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: right;
+  color: var(--ink);
+}
+
+.search-palette-item:hover,
+.search-palette-item:focus-visible {
+  background: var(--accent-soft);
+}
+
+.search-palette-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-palette-subtitle {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-inline-start: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40%;
+}
+
+.search-palette-type-project {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.search-palette-type-task {
+  background: var(--line-2);
+  color: var(--ink-2);
+}
+.search-palette-type-contact {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.search-palette-type-deal {
+  background: var(--gold-soft);
+  color: var(--warn);
+}
+.search-palette-type-transaction {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.search-palette-type-event {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
 /* ---------- calendar ---------- */
 
 .checkbox-label {
@@ -1292,6 +1432,28 @@ textarea {
   background: var(--surface);
   color: var(--ink);
   font-size: 12.5px;
+}
+
+/* ---------- dashboard ---------- */
+
+.attention-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.attention-link:hover {
+  color: var(--accent);
+}
+
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* ---------- settings ---------- */

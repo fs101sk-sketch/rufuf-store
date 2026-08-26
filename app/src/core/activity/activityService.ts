@@ -5,6 +5,40 @@ import { nowIso } from '../dates'
 
 const ACTOR = 'user'
 
+export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
+  'project.created': 'تم إنشاء مشروع',
+  'project.updated': 'تم تحديث مشروع',
+  'project.deleted': 'تم حذف مشروع',
+  'project.restored': 'تمت استعادة مشروع',
+  'project.duplicated': 'تم تكرار مشروع',
+  'task.created': 'تمت إضافة مهمة',
+  'task.updated': 'تم تحديث مهمة',
+  'task.deleted': 'تم حذف مهمة',
+  'task.restored': 'تمت استعادة مهمة',
+  'task.completed': 'تم إكمال مهمة',
+  'task.reopened': 'تمت إعادة فتح مهمة',
+  'contact.created': 'تم إنشاء جهة اتصال',
+  'contact.updated': 'تم تحديث جهة اتصال',
+  'contact.deleted': 'تم حذف جهة اتصال',
+  'contact.restored': 'تمت استعادة جهة اتصال',
+  'deal.created': 'تمت إضافة صفقة',
+  'deal.updated': 'تم تحديث صفقة',
+  'deal.deleted': 'تم حذف صفقة',
+  'deal.restored': 'تمت استعادة صفقة',
+  'deal.stage_changed': 'تغيّرت مرحلة صفقة',
+  'transaction.created': 'تمت إضافة حركة مالية',
+  'transaction.updated': 'تم تحديث حركة مالية',
+  'transaction.deleted': 'تم حذف حركة مالية',
+  'transaction.restored': 'تمت استعادة حركة مالية',
+  'event.created': 'تمت إضافة حدث',
+  'event.updated': 'تم تحديث حدث',
+  'event.deleted': 'تم حذف حدث',
+  'event.restored': 'تمت استعادة حدث',
+  'settings.updated': 'تم تحديث الإعدادات',
+  'backup.exported': 'تم تصدير نسخة احتياطية',
+  'backup.imported': 'تم استيراد نسخة احتياطية',
+}
+
 export async function logActivity(
   action: ActivityAction,
   entityType: ActivityLogRow['entity_type'],

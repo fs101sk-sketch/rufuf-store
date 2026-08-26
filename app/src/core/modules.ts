@@ -12,6 +12,7 @@ export interface ModuleDefinition {
  * pretending an unbuilt module works.
  */
 export const MODULES: ModuleDefinition[] = [
+  { id: 'dashboard', label: 'الرئيسية', path: '/', implemented: true },
   { id: 'projects', label: 'المشاريع', path: '/projects', implemented: true },
   { id: 'crm', label: 'العملاء (CRM)', path: '/crm', implemented: true },
   { id: 'calendar', label: 'التقويم', path: '/calendar', implemented: true },

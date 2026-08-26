@@ -1,15 +1,20 @@
 import { NavLink } from 'react-router-dom'
 import { implementedModules, plannedModules } from '../modules'
 
-export function Sidebar() {
+export function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">نظام الأعمال</div>
+      <button type="button" className="sidebar-search-btn" onClick={onOpenSearch}>
+        <span>🔍 بحث</span>
+        <kbd>Ctrl+K</kbd>
+      </button>
       <nav className="sidebar-nav">
         {implementedModules.map((m) => (
           <NavLink
             key={m.id}
             to={m.path}
+            end={m.path === '/'}
             className={({ isActive }) => 'sidebar-link' + (isActive ? ' active' : '')}
           >
             {m.label}

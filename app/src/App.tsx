@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import { ensureWorkspace } from './core/db/bootstrap'
 import { Layout } from './core/ui/Layout'
 import { ErrorBoundary } from './core/ui/ErrorBoundary'
 import { ToastHost } from './core/ui/ToastHost'
 import { ConfirmDialogHost } from './core/ui/ConfirmDialogHost'
 import { LoadingState, ErrorState } from './core/ui/States'
+import { DashboardPage } from './modules/dashboard/DashboardPage'
 import { ProjectsPage } from './modules/projects/ProjectsPage'
 import { ProjectDetailPage } from './modules/projects/ProjectDetailPage'
 import { ContactsPage } from './modules/crm/ContactsPage'
@@ -20,7 +21,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<Navigate to="/projects" replace />} />
+        <Route index element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/crm" element={<ContactsPage />} />
